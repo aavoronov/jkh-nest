@@ -7,8 +7,12 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2017",
+    "sourceRoot": "./",
     "sourceMap": true,
     "outDir": "./dist",
+    "paths": {
+      "@/*": ["*"]
+    },
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,

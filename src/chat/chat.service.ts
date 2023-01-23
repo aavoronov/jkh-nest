@@ -13,6 +13,7 @@ import { Express } from 'express';
 import { Base64 } from 'js-base64';
 import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class ChatService {
@@ -133,8 +134,69 @@ export class ChatService {
     }
   }
 
-  async getSearchMessages(query: string) {
-    return 'test';
+  async getSearchMessages(
+    email: string,
+    query: string,
+  ): Promise<IRequestMessage> {
+    try {
+      console.log('PIZDEC');
+      const limit = 40;
+      //   const page = parseInt(body.page) || 1;
+      const page = 1;
+      const offset = page * limit - limit;
+
+      const access = await RoomAccess.findAll(
+        // { where: { email: email } }
+        {
+          include: [
+            { model: User, where: { email: email }, attributes: ['id'] },
+          ],
+        },
+      );
+
+      const rooms = access.map((item) => item.roomId);
+
+      console.log(rooms);
+
+      const result = await Message.findAll({
+        include: [
+          {
+            model: User,
+            attributes: ['id'],
+            include: [
+              {
+                model: Profile,
+                as: 'profile',
+                attributes: ['pseudonym', 'color'],
+              },
+            ],
+          },
+        ],
+        where: {
+          roomId: rooms,
+          message: {
+            [Op.like]: `%${query}%`,
+          },
+        },
+        attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],
+        order: [['id', 'ASC']],
+      });
+
+      // const result = messages.map((item) => {
+      // if (!!item.file) {
+      // item = { ...item, file: this.getFile(item.file) };
+      // }
+      // });
+      console.log(query ?? 'pizda');
+
+      return {
+        status: StatusCodes.OK,
+        message: 'Ok',
+        data: result.map((value) => value.toJSON()),
+      };
+    } catch (e) {
+      return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
+    }
   }
 
   // getFile(image: string, res: any): any {

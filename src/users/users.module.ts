@@ -12,16 +12,16 @@ export class UsersModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ path: '/users/', method: RequestMethod.ALL });
+      .forRoutes({ path: '/', method: RequestMethod.ALL });
     consumer
       .apply(AccessMiddleware)
       .exclude(
-        { path: '/', method: RequestMethod.POST },
+        { path: '', method: RequestMethod.POST },
         { path: 'auth', method: RequestMethod.POST },
         { path: 'confirm', method: RequestMethod.GET },
         { path: 'restore', method: RequestMethod.POST },
         { path: 'reauth', method: RequestMethod.GET },
       )
-      .forRoutes({ path: '/users/', method: RequestMethod.ALL });
+      .forRoutes({ path: '/', method: RequestMethod.ALL });
   }
 }

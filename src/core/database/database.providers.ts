@@ -1,14 +1,14 @@
 import { Sequelize } from 'sequelize-typescript';
-import { User } from '../../../src/users/entities/user.entity';
-import { Profile } from '../../../src/users/entities/profile.entity';
+import { User } from 'src/users/entities/user.entity';
+import { Profile } from '../../users/entities/profile.entity';
 // import { User } from '/src/users/entities/user.entity';
 import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from '../constants';
 import { databaseConfig } from './database.config';
 import { Verifications } from '../../verifications/entities/verification.entity';
-import { Message } from '../../../src/chat/entities/message.entity';
-import { MapObject } from '../../../src/map-objects/entities/map-object.entity';
-import { ChatRoom } from '../../../src/chat-rooms/entities/chat-room.entity';
-import { RoomAccess } from '../../../src/chat-rooms/entities/room-access.entity';
+import { Message } from '../../chat/entities/message.entity';
+import { MapObject } from '../../map-objects/entities/map-object.entity';
+import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
+import { RoomAccess } from '../../chat-rooms/entities/room-access.entity';
 
 const entities: any[] = [
   User,

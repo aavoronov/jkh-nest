@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { User } from 'src/users/entities/user.entity';
 import { ChatService } from './chat.service';
 import { Message } from './entities/message.entity';
 import {
@@ -62,8 +61,12 @@ export class ChatController {
     return this.chatService.createMessage(payload);
   }
 
-  getSearchMessages(@Query('query') query: string) {
-    return this.chatService.getSearchMessages(query);
+  @Get(':email')
+  getSearchMessages(
+    @Param('email') email: string,
+    @Query('query') query: string,
+  ) {
+    return this.chatService.getSearchMessages(email, query);
   }
 
   // @Post('uploads')
