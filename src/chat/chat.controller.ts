@@ -61,11 +61,12 @@ export class ChatController {
     return this.chatService.createMessage(payload);
   }
 
-  @Get(':email')
+  @Get('search/:email')
   getSearchMessages(
     @Param('email') email: string,
     @Query('query') query: string,
   ) {
+    console.log(query);
     return this.chatService.getSearchMessages(email, query);
   }
 
