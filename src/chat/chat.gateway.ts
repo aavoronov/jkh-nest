@@ -75,7 +75,8 @@ export class ChatGateway
     // @MessageBody() message: IMessageBody
     console.log(message);
     // console.log(file);
-    const time = new Date().toLocaleString().slice(12, 17);
+    const time = new Date().toString().slice(16, 21);
+    console.log(time);
     const payload = {
       // email: message.email,
       message: message.text,
