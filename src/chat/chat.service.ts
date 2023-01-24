@@ -13,7 +13,7 @@ import { Express } from 'express';
 import { Base64 } from 'js-base64';
 import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 @Injectable()
 export class ChatService {
@@ -139,7 +139,6 @@ export class ChatService {
     query: string,
   ): Promise<IRequestMessage> {
     try {
-      console.log('PIZDEC');
       const limit = 40;
       //   const page = parseInt(body.page) || 1;
       const page = 1;
@@ -175,7 +174,8 @@ export class ChatService {
         where: {
           roomId: rooms,
           message: {
-            [Op.like]: `%${query}%`,
+            // [Sequelize.fn('LOWER', Sequelize.col('someColumn')), 'lower'],
+            [Op.iLike]: `%${query}%`,
           },
         },
         attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],

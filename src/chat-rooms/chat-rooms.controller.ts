@@ -39,6 +39,11 @@ export class ChatRoomsController {
     return this.chatRoomsService.signUp(signUpToRoomDto);
   }
 
+  @Delete('sign-up')
+  leaveChat(@Query('email') email: string, @Query('chat') chat: string) {
+    return this.chatRoomsService.leaveChat(email, chat);
+  }
+
   @Get('room/:id/users')
   getUsers(@Param('id') id: number) {
     return this.chatRoomsService.getUsers(id);

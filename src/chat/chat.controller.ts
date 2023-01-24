@@ -1,5 +1,6 @@
 import { Controller, Get, Req, Res, Body } from '@nestjs/common';
 import {
+  Delete,
   Header,
   Param,
   Post,

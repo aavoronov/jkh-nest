@@ -60,6 +60,39 @@ export class ChatRoomsService {
     }
   }
 
+  async leaveChat(email: string, chat: string) {
+    try {
+      console.log(email + chat);
+      const user = await User.findOne({
+        where: { email: email },
+        attributes: ['id'],
+      });
+
+      const room = await RoomAccess.destroy({
+        where: {
+          userId: user.id,
+          roomId: parseInt(chat),
+        },
+      });
+
+      if (room === 0) {
+        throw new HttpException(
+          'Внутренняя ошибка сервера',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      return { status: StatusCodes.OK, message: 'Success' };
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
   async getMy(email: string) {
     try {
       const user = await User.findOne({
