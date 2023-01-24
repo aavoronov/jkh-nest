@@ -122,17 +122,18 @@ export class UsersService {
         await Profile.create({ userId: newUser.id, color: pastelColor.hex() });
 
         const { token } = await Verifications.create({ userId: newUser.id });
-        if (user.email) {
-          const mailBody: IEmailRegister = {
-            email: user.email,
-            verification: token,
-          };
+        // if (user.email) {
+        //   const mailBody: IEmailRegister = {
+        //     email: user.email,
+        //     verification: token,
+        //   };
 
-          await mailerService.sendMailRegister(mailBody);
-        }
+        //   await mailerService.sendMailRegister(mailBody);
+        // }
       }
 
-      return { email: newUser.email };
+      // return { email: newUser.email };
+      return {};
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -184,7 +185,8 @@ export class UsersService {
         );
       }
 
-      if (!!user.verification?.token) {
+      if (!user.verification?.token) {
+        // if (!!user.verification?.token) {
         throw new HttpException(
           'Вы не подтвердили аккаунт. Проверьте свою почту.',
           StatusCodes.FORBIDDEN,
