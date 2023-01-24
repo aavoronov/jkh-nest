@@ -49,9 +49,9 @@ export class AuthMiddleware implements NestMiddleware {
 
       console.log(!!user);
 
-      if (!user || !!user.verification) {
+      // if (!user || !!user.verification) {
+      if (!user || !user.verification) {
         req.body = { ...req.body, access: false };
-        console.log('here');
 
         return next();
       }
