@@ -66,9 +66,20 @@ export class ChatController {
   getSearchMessages(
     @Param('email') email: string,
     @Query('query') query: string,
+    @Query('chat') chat: string,
   ) {
     console.log(query);
-    return this.chatService.getSearchMessages(email, query);
+    return this.chatService.getSearchMessages(email, query, chat);
+  }
+
+  @Get('calendar/:email')
+  getCalendarMessages(
+    @Param('email') email: string,
+    @Query('date') date: string,
+    @Query('chat') chat: string,
+  ) {
+    console.log(date);
+    return this.chatService.getCalendarMessages(email, date, chat);
   }
 
   // @Post('uploads')
