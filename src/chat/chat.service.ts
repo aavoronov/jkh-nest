@@ -61,10 +61,13 @@ export class ChatService {
   }
 
   //   async getMessages(body: IGetMessages): Promise<IRequestMessage> {
-  async getMessages(req, email: string): Promise<IRequestMessage> {
+  async getMessages(
+    req,
+    email: string,
+    page: number,
+  ): Promise<IRequestMessage> {
     const limit = 20;
     //   const page = parseInt(body.page) || 1;
-    const page = 1;
     const offset = page * limit - limit;
 
     async function getMessagesPerRoom(room: number) {
@@ -86,6 +89,7 @@ export class ChatService {
         attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],
         order: [['id', 'DESC']],
         limit,
+        offset,
       });
       return perRoom;
     }
@@ -233,9 +237,52 @@ export class ChatService {
     }
   }
 
+  async getMessagesNumber(email: string): Promise<IRequestMessage> {
+    async function getMessagesPerRoom(room: any) {
+      const perRoom = await Message.count({
+        where: {
+          updatedAt: { [Op.gte]: room.updatedAt as Date },
+          roomId: room.roomId,
+        },
+      });
+      return { room: room.roomId, amount: perRoom };
+    }
+
+    try {
+      const access = await RoomAccess.findAll({
+        include: [{ model: User, where: { email: email }, attributes: ['id'] }],
+      });
+
+      const rooms = access.map((item) => {
+        return { roomId: item.roomId, updatedAt: item.updatedAt };
+      });
+
+      console.log(rooms);
+
+      const results = await async.map(rooms, getMessagesPerRoom);
+
+      console.log(results);
+
+      return {
+        status: StatusCodes.OK,
+        message: 'Ok',
+        data: results,
+        // data: msgs,
+      };
+    } catch (e) {
+      console.log(e);
+      return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
+    }
+  }
+
+  async getMessagesSince(email: string) {
+    console.log('get number');
+  }
+
   // getFile(image: string, res: any): any {
   //   return res.sendFile(image, { root: './uploads' });
   // }
+
   getFile(image: string, res: any): any {
     return res.sendFile(image, { root: './uploads' });
   }

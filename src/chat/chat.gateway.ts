@@ -10,6 +10,7 @@ import { writeFile } from 'fs';
 import { Base64 } from 'js-base64';
 import { Namespace, Socket } from 'socket.io';
 import { fileURLToPath } from 'url';
+import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { ChatService } from './chat.service';
 import { Message } from './entities/message.entity';
 import { IMessageBody } from './interfaces/interface';
@@ -18,7 +19,10 @@ import { IMessageBody } from './interfaces/interface';
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatRoomsService: ChatRoomsService,
+  ) {}
 
   @WebSocketServer() io: Namespace;
 
@@ -57,14 +61,17 @@ export class ChatGateway
     client.join(room);
     console.log(client.rooms);
     // console.log(client.to(room));
-    client.emit('joinedRoom', room);
+    // client.emit('joinedRoom', room);
   }
 
   @SubscribeMessage('ping')
-  handlePing(client: Socket): void {
-    console.log('ping!');
-    this.io.emit('pong', 'pong');
-    client.emit('pong');
+  handlePing(client: Socket, args: any[]): void {
+    console.log(args);
+    const [email, chat] = args;
+    console.log('ping!', email, chat);
+    this.chatRoomsService.createTimeRecord(email, chat);
+    // this.io.emit('pong', 'pong');
+    // client.emit('pong');
   }
 
   @SubscribeMessage('message')

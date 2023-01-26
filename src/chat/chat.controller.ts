@@ -28,8 +28,12 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get(':email')
-  getMessages(@Req() req, @Param('email') email: string) {
-    return this.chatService.getMessages(req, email);
+  getMessages(
+    @Req() req,
+    @Param('email') email: string,
+    @Query('page') page: number,
+  ) {
+    return this.chatService.getMessages(req, email, page);
   }
 
   // @Post()
@@ -87,6 +91,16 @@ export class ChatController {
   // uploadFile(@UploadedFile() file: Express.Multer.File) {
   //   return this.chatService.uploadFile(file);
   // }
+
+  @Get('notifications/:email')
+  getMessagesNumber(@Param('email') email: string) {
+    return this.chatService.getMessagesNumber(email);
+  }
+
+  @Get('since/:email')
+  getMessagesSince(@Param('email') email: string) {
+    return this.chatService.getMessagesSince(email);
+  }
 
   @Get('uploads/:name')
   seeUploadedFile(@Param('name') image: string, @Res() res: any) {

@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
+import sequelize from 'sequelize';
 import { Profile } from '../users/entities/profile.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
@@ -86,7 +87,6 @@ export class ChatRoomsService {
       }
       return { status: StatusCodes.OK, message: 'Success' };
     } catch (e) {
-      console.log(e);
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
@@ -130,6 +130,29 @@ export class ChatRoomsService {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
+    }
+  }
+
+  async createTimeRecord(email: string, chat: number): Promise<void> {
+    try {
+      const user = await User.findOne({
+        where: { email: email },
+        attributes: ['id'],
+      });
+      console.log(user.id, chat);
+      const record = await RoomAccess.findOne({
+        where: { userId: parseInt(user.id), roomId: chat },
+      });
+
+      record.changed('updatedAt', true);
+      await record.update({
+        updatedAt: new Date(),
+      });
+
+      // { updatedAt: sequelize.literal('CURRENT_TIMESTAMP') },
+      // console.log(updated);
+    } catch (e) {
+      console.log(e);
     }
   }
 

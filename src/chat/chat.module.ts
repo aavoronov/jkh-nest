@@ -5,6 +5,7 @@ import { ChatGateway } from './chat.gateway';
 import { MulterModule } from '@nestjs/platform-express';
 import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
+import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AccessMiddleware } from '../utils/middleware/access.middleware';
     }),
   ],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway],
+  providers: [ChatService, ChatGateway, ChatRoomsService],
 })
 export class ChatModule {
   configure(consumer: MiddlewareConsumer) {
