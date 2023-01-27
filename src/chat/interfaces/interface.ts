@@ -2,6 +2,7 @@ export type TTypeChat = 'group' | 'personal';
 
 export interface IMessageBody {
   email: string;
+  pseudonym: string;
   text: string;
   color: string;
   file: Buffer | undefined;

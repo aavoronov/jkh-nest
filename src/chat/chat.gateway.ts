@@ -29,39 +29,24 @@ export class ChatGateway
   afterInit() {
     console.log('initialized');
   }
-  user = '';
 
   handleConnection(client: Socket): void {
-    console.log(client.handshake.query.pseudonym);
-    // const url = data.handshake.url;
-    this.user = client.handshake.query.pseudonym.toString();
-    // client.join('room');
     const sockets = this.io.sockets;
     console.log('c');
     console.log(sockets.size);
     client.emit('newConnection', 'all except');
-    this.io
-      .to('room1')
-      .emit('newConnection', 'nonexistent (yet) room1 on connect');
-    this.io.to('room').emit('newConnection', 'room on connect');
-    // const rooms = this.io.adapter.rooms;
-    // console.log(rooms);
   }
 
-  handleDisconnect(client: Socket): void {
+  handleDisconnect(): void {
     const sockets = this.io.sockets;
     console.log('dc');
     console.log(sockets.size);
-    // client.emit('all except');
-    // this.io.emit('all');
   }
 
   @SubscribeMessage('joinRoom')
-  handleRoomJoin(client: Socket, room: string[]) {
+  handleRoomJoin(client: Socket, room: string[]): void {
     client.join(room);
     console.log(client.rooms);
-    // console.log(client.to(room));
-    // client.emit('joinedRoom', room);
   }
 
   @SubscribeMessage('ping')
@@ -70,8 +55,6 @@ export class ChatGateway
     const [email, chat] = args;
     console.log('ping!', email, chat);
     this.chatRoomsService.createTimeRecord(email, chat);
-    // this.io.emit('pong', 'pong');
-    // client.emit('pong');
   }
 
   @SubscribeMessage('message')
@@ -87,7 +70,7 @@ export class ChatGateway
     const payload = {
       // email: message.email,
       message: message.text,
-      name: this.user,
+      name: message.pseudonym,
       time: time,
       color: message.color,
       file: !!message.file ? message.file : '',
