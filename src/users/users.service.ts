@@ -185,8 +185,8 @@ export class UsersService {
         );
       }
 
-      if (!user.verification?.token) {
-        // if (!!user.verification?.token) {
+      // if (!user.verification?.token) {
+      if (!!user.verification?.token) {
         throw new HttpException(
           'Вы не подтвердили аккаунт. Проверьте свою почту.',
           StatusCodes.FORBIDDEN,
