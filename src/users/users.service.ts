@@ -232,12 +232,30 @@ export class UsersService {
       }
 
       {
-        await Verifications.destroy({ where: { userId: user.id } });
+        await Verifications.destroy({ where: { userId: user.userId } });
         console.log(user.id);
-        return {
-          status: StatusCodes.OK,
-          message: ReasonPhrases.OK,
-        };
+        // return {
+        //   status: StatusCodes.OK,
+        //   message: ReasonPhrases.OK,
+        // };
+        return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Подтверждение аккаунта на ЖКХ Консьерж</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+        </head>
+        <body>
+        <div style="width: 100%; display: flex; align-items: center; margin-top: 10%; flex-direction: column"><span style="font-family: Roboto; text-align: center">Подтверждение почты прошло успешно. Вы можете закрыть эту страницу или нажать кнопку ниже, чтобы перейти на главную.</span>
+        <a href="${process.env.CLIENT_URL}" style="background-color: #ff8c00; border-radius: 5px; padding: 16px 30px; color: #ffffff; margin-top: 10%; width: 200px; text-align: center; font-family: Roboto; text-decoration: none">Перейти на главную</a>
+        </div>
+        </body>
+        </html>`;
       }
     } catch (e) {
       throw new HttpException(e.message, e.status, {
