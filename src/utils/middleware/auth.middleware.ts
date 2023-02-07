@@ -49,8 +49,8 @@ export class AuthMiddleware implements NestMiddleware {
 
       console.log(!!user);
 
-      // if (!user || !!user.verification) {
-      if (!user || !user.verification) {
+      if (!user || !!user.verification) {
+        // if (!user || !user.verification) {
         req.body = { ...req.body, access: false };
 
         return next();
@@ -59,7 +59,7 @@ export class AuthMiddleware implements NestMiddleware {
       //     return res.status(StatusCodes.BAD_REQUEST).send({
       //       status: StatusCodes.BAD_REQUEST,
       //       message: 'BAD_REQUEST',
-      //       data: 'Аккаунт заблокирован/удален здесь еще можно',
+      //       data: 'Аккаунт заблокирован/удален',
       //     });
       //   }
       req.body = {

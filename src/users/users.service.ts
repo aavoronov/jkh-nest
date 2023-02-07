@@ -200,13 +200,7 @@ export class UsersService {
       const accessToken = jwt.sign(user.toJSON(), process.env.JWT, {
         expiresIn: process.env.JWT_EXPIRES_IN,
       });
-      // const tokenDecoded = jwt.verify(accessToken, process.env.JWT);
-      // const tokenDecodedInvalid = jwt.verify(
-      //   `${accessToken}dsffd`,
-      //   process.env.JWT,
-      // );
-      // console.log('jwtdecoded' + JSON.stringify(tokenDecoded));
-      // console.log('jwtdecoded' + JSON.stringify(tokenDecodedInvalid));
+
       return {
         status: StatusCodes.OK,
         message: ReasonPhrases.OK,
@@ -222,13 +216,6 @@ export class UsersService {
 
   async confirmEmail(verification: string) {
     try {
-      // const user = await User.findOne({
-      //   where: { email },
-
-      //   // include: Verifications,
-      //   include: { model: Verifications, attributes: ['token'] },
-      // });
-
       const user = await Verifications.findOne({
         where: { token: verification },
         // include: { model: User, attributes: ['id', 'email'] },
@@ -243,16 +230,7 @@ export class UsersService {
           },
         );
       }
-      // console.log(user.verification.token);
-      // if (!user.token) {
-      //   throw new HttpException(
-      //     'Аккаунт уже подтвержден!',
-      //     StatusCodes.NOT_ACCEPTABLE,
-      //     {
-      //       cause: new Error('Some Error'),
-      //     },
-      //   );
-      // }
+
       {
         await Verifications.destroy({ where: { userId: user.id } });
         console.log(user.id);

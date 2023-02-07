@@ -1,7 +1,8 @@
 import { Injectable, BadGatewayException } from '@nestjs/common';
-import { createTransport } from 'nodemailer';
 import { IEmailRegister, IEmailUpdatePassword } from './interfaces/email.body';
 import { HttpException } from '@nestjs/common';
+
+import { createTransport } from 'nodemailer';
 
 const user = process.env.MAILER_USER;
 const pass = process.env.MAILER_PASSWORD;
@@ -44,7 +45,7 @@ export class MailerService {
     try {
       const output = `
            
-            <p>Аккаунт зарегистрирован. <a href="${process.env.MAILER_URL}users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
+            <p>Аккаунт зарегистрирован. <a href="${process.env.MAILER_URL}/users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
             
         `;
       const mailOptions = {
