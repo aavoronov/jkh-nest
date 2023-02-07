@@ -28,12 +28,18 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get(':email')
-  getMessages(
+  getMessages(@Req() req, @Param('email') email: string) {
+    return this.chatService.getMessages(req, email);
+  }
+
+  @Get('more/:email')
+  getMoreMessages(
     @Req() req,
     @Param('email') email: string,
     @Query('page') page: number,
+    @Query('chat') chat: string,
   ) {
-    return this.chatService.getMessages(req, email, page);
+    return this.chatService.getMoreMessages(req, email, page, chat);
   }
 
   // @Post()
@@ -51,18 +57,25 @@ export class ChatController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const fileName = Base64.encodeURI(
-            (Math.random() * 1000).toString() + Date.now(),
-          );
-          console.log(file.originalname);
-          const dbFileName = fileName + '.' + file.originalname.split('.')[1];
-          req.body.filename = dbFileName;
-          cb(null, `${dbFileName}`);
+          try {
+            const fileName = Base64.encodeURI(
+              (Math.random() * 1000).toString() + Date.now(),
+            );
+            console.log(file);
+            const dbFileName =
+              fileName +
+              file.originalname.slice(file.originalname.lastIndexOf('.'));
+            req.body.filename = dbFileName;
+            cb(null, `${dbFileName}`);
+          } catch (e) {
+            console.log(e);
+          }
         },
       }),
     }),
   )
   createMessage(@Body() payload: any) {
+    console.log(payload._parts);
     return this.chatService.createMessage(payload);
   }
 

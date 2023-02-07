@@ -5,7 +5,8 @@ export interface IMessageBody {
   pseudonym: string;
   text: string;
   color: string;
-  file: Buffer | undefined;
+  // file: Buffer | Blob | string | undefined;
+  file: string | undefined;
   filename: string | undefined;
   roomId: string;
 }

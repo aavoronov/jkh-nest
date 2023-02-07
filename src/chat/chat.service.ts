@@ -20,6 +20,7 @@ import * as async from 'async';
 export class ChatService {
   async createMessage(payload: any): Promise<void> {
     try {
+      console.log(payload);
       const { sender, message, filename, roomId } = payload;
 
       //   const permissions = await ChatPermissions.findAll({
@@ -54,6 +55,7 @@ export class ChatService {
       }
       console.log('ok');
     } catch (e) {
+      console.log(e);
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
@@ -61,10 +63,75 @@ export class ChatService {
   }
 
   //   async getMessages(body: IGetMessages): Promise<IRequestMessage> {
-  async getMessages(
+  async getMessages(req, email: string): Promise<IRequestMessage> {
+    const limit = 20;
+    const page = 1;
+    const offset = page * limit - limit;
+
+    async function getMessagesPerRoom(room: number) {
+      const perRoom = await Message.findAll({
+        include: [
+          {
+            model: User,
+            attributes: ['id'],
+            include: [
+              {
+                model: Profile,
+                as: 'profile',
+                attributes: ['pseudonym', 'color'],
+              },
+            ],
+          },
+        ],
+        where: { roomId: room },
+        attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],
+        order: [['id', 'DESC']],
+        limit,
+        // offset,
+      });
+      return perRoom;
+    }
+
+    try {
+      const access = await RoomAccess.findAll({
+        include: [{ model: User, where: { email: email }, attributes: ['id'] }],
+      });
+
+      const rooms = access.map((item) => item.roomId);
+
+      console.log(rooms);
+
+      const results = await async.map(rooms, getMessagesPerRoom);
+
+      const msgs = results.flat().sort((a, b) => {
+        const idA = a.id;
+        const idB = b.id;
+        if (idA < idB) {
+          return -1;
+        }
+        if (idA > idB) {
+          return 1;
+        }
+        return 0;
+      });
+
+      return {
+        status: StatusCodes.OK,
+        message: 'Ok',
+        // data: results.map((value) => value.toJSON()),
+        data: msgs,
+      };
+    } catch (e) {
+      return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
+      // console.log(e);
+    }
+  }
+
+  async getMoreMessages(
     req,
     email: string,
     page: number,
+    chat: string,
   ): Promise<IRequestMessage> {
     const limit = 20;
     //   const page = parseInt(body.page) || 1;
@@ -103,7 +170,17 @@ export class ChatService {
 
       console.log(rooms);
 
-      const results = await async.map(rooms, getMessagesPerRoom);
+      if (!rooms.includes(parseInt(chat))) {
+        throw new HttpException(
+          'Вы не зарегистрированы в этом чате',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const results = await getMessagesPerRoom(parseInt(chat));
 
       const msgs = results.flat().sort((a, b) => {
         const idA = a.id;

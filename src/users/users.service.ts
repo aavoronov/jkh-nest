@@ -122,14 +122,14 @@ export class UsersService {
         await Profile.create({ userId: newUser.id, color: pastelColor.hex() });
 
         const { token } = await Verifications.create({ userId: newUser.id });
-        // if (user.email) {
-        //   const mailBody: IEmailRegister = {
-        //     email: user.email,
-        //     verification: token,
-        //   };
+        if (user.email) {
+          const mailBody: IEmailRegister = {
+            email: user.email,
+            verification: token,
+          };
 
-        //   await mailerService.sendMailRegister(mailBody);
-        // }
+          await mailerService.sendMailRegister(mailBody);
+        }
       }
 
       // return { email: newUser.email };
@@ -336,10 +336,6 @@ export class UsersService {
       //   },
       // );
       const result = await jwt.verify(token, process.env.JWT);
-      // const result = await jwt.verify(
-      //   token,
-      //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0aW5nZXIxMjIxQG1haWwucnUiLCJwYXNzd29yZCI6IiQyYiQxMCRnczJRaWRnT3JnS3dCNzdxdWtIVXIuUzZLdk1PQXdJd2JqZ3F1ZEh3QXk1Mk1Lb2VLSFNlRyIsInJvbGUiOiJ1c2VyIiwidmVyaWZpY2F0aW9uIjpudWxsLCJpYXQiOjE2NzE3MTQzMzcsImV4cCI6MTY3NDMwNjMzN30.G3NREUppfEsT4OD1HDqHI9YAYWw3HbVPnW7eIylzdPE',
-      // );
 
       console.log(result);
       if (!!result.message) {
