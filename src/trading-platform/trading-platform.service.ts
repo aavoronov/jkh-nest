@@ -447,8 +447,6 @@ export class TradingPlatformService {
       });
       console.log(likes);
 
-      product.likes = likes;
-
       return product;
     } catch (e) {
       console.log(e);

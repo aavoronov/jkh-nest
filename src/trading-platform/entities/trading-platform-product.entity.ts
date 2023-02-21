@@ -113,14 +113,6 @@ export class TradingPlatformProduct extends Model<TradingPlatformProduct> {
 
   @ApiProperty()
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  likes: number;
-
-  @ApiProperty()
-  @Column({
     type: DataType.DATE,
     allowNull: true,
   })
