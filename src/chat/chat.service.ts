@@ -78,7 +78,7 @@ export class ChatService {
               {
                 model: Profile,
                 as: 'profile',
-                attributes: ['pseudonym', 'color'],
+                attributes: ['pseudonym', 'color', 'profilePic'],
               },
             ],
           },
@@ -147,7 +147,7 @@ export class ChatService {
               {
                 model: Profile,
                 as: 'profile',
-                attributes: ['pseudonym', 'color'],
+                attributes: ['pseudonym', 'color', 'profilePic'],
               },
             ],
           },
@@ -226,7 +226,7 @@ export class ChatService {
               {
                 model: Profile,
                 as: 'profile',
-                attributes: ['pseudonym', 'color'],
+                attributes: ['pseudonym', 'color', 'profilePic'],
               },
             ],
           },
@@ -282,7 +282,7 @@ export class ChatService {
               {
                 model: Profile,
                 as: 'profile',
-                attributes: ['pseudonym', 'color'],
+                attributes: ['pseudonym', 'color', 'profilePic'],
               },
             ],
           },

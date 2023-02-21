@@ -1,6 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
 import sequelize from 'sequelize';
+import { EstateObjectRights } from '../estate-objects/entities/estate-object-rights.entity';
+import { EstateObject } from '../estate-objects/entities/estate-object.entity';
 import { Profile } from '../users/entities/profile.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
@@ -8,12 +10,45 @@ import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 import { ChatRoom } from './entities/chat-room.entity';
 import { RoomAccess } from './entities/room-access.entity';
+import * as jwt from 'jsonwebtoken';
+import { Verifications } from '../verifications/entities/verification.entity';
 
 @Injectable()
 export class ChatRoomsService {
-  async getRooms() {
-    // return `This action returns all chatRooms`;
-    const rooms = await ChatRoom.findAll();
+  async getRooms(req) {
+    const token = req.headers.authorization;
+    const result = jwt.verify(token, process.env.JWT);
+    const user = await User.findOne({
+      where: { email: result.email },
+      include: [{ model: Verifications }],
+    });
+
+    const chatRooms = await ChatRoom.findAll({
+      // where: {
+      //   '$EstateObject.EstateObjectRight.userId$': { [Op.eq]: user.id },
+      // },
+      include: [
+        {
+          model: EstateObject,
+          required: true,
+          attributes: ['id'],
+          include: [
+            {
+              model: EstateObjectRights,
+              where: { userId: user.id },
+              required: true,
+              attributes: ['id'],
+            },
+          ],
+        },
+      ],
+    });
+
+    const roomsAvailable = chatRooms.map((item) => item.id);
+
+    console.log(roomsAvailable);
+
+    const rooms = await ChatRoom.findAll({ where: { id: roomsAvailable } });
     return rooms;
   }
 
@@ -121,7 +156,12 @@ export class ChatRoomsService {
           {
             model: User,
             attributes: ['id'],
-            include: [{ model: Profile, attributes: ['pseudonym', 'color'] }],
+            include: [
+              {
+                model: Profile,
+                attributes: ['pseudonym', 'color', 'profilePic'],
+              },
+            ],
           },
         ],
       });

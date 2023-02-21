@@ -36,4 +36,8 @@ export class AppService {
     </body>
     </html>`;
   }
+
+  getFile(path: string, image: string, res: any): any {
+    return res.sendFile(image, { root: `./uploads/${path}` });
+  }
 }

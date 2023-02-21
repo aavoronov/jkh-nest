@@ -42,20 +42,11 @@ export class ChatController {
     return this.chatService.getMoreMessages(req, email, page, chat);
   }
 
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file'))
-  // createMessage(
-  //   @UploadedFile() file: Express.Multer.File | undefined,
-  //   @Body() payload: any,
-  // ) {
-  //   return this.chatService.createMessage(payload, file);
-  // }
-
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: './uploads/chat/',
         filename: (req, file, cb) => {
           try {
             const fileName = Base64.encodeURI(

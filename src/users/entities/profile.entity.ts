@@ -39,6 +39,11 @@ export class Profile extends Model<Profile> {
   color: string;
 
   @Column({
+    type: DataType.STRING,
+  })
+  profilePic: string;
+
+  @Column({
     type: DataType.ENUM,
     values: ['male', 'female'],
   })

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ChatRoomsService } from './chat-rooms.service';
@@ -20,8 +21,8 @@ export class ChatRoomsController {
   constructor(private readonly chatRoomsService: ChatRoomsService) {}
 
   @Get()
-  getRooms() {
-    return this.chatRoomsService.getRooms();
+  getRooms(@Req() req: any) {
+    return this.chatRoomsService.getRooms(req);
   }
 
   @Post()

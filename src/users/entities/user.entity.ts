@@ -10,6 +10,8 @@ import { Verifications } from '../../verifications/entities/verification.entity'
 import { Profile } from './profile.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Message } from '../../chat/entities/message.entity';
+import { EstateObjectRights } from '../../estate-objects/entities/estate-object-rights.entity';
+import { TradingPlatformFavorites } from '../../trading-platform/entities/trading-platform-favorites.entity';
 
 @Table
 export class User extends Model<User> {
@@ -40,6 +42,22 @@ export class User extends Model<User> {
   @ApiProperty()
   role: string;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  })
+  @ApiProperty()
+  isDeleted: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  })
+  @ApiProperty()
+  isBlocked: boolean;
+
   @HasOne(() => Profile)
   profile: Profile;
 
@@ -48,4 +66,10 @@ export class User extends Model<User> {
 
   @HasMany(() => Message)
   messages: Message;
+
+  @HasMany(() => EstateObjectRights)
+  estateObjectRight: EstateObjectRights;
+
+  @HasMany(() => TradingPlatformFavorites)
+  favorites: TradingPlatformFavorites;
 }

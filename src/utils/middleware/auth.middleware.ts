@@ -47,7 +47,7 @@ export class AuthMiddleware implements NestMiddleware {
         include: [{ model: Verifications }],
       });
 
-      console.log(!!user);
+      console.log(user);
 
       if (!user || !!user.verification) {
         // if (!user || !user.verification) {
@@ -55,17 +55,18 @@ export class AuthMiddleware implements NestMiddleware {
 
         return next();
       }
-      //   if (user.blocked) {
-      //     return res.status(StatusCodes.BAD_REQUEST).send({
-      //       status: StatusCodes.BAD_REQUEST,
-      //       message: 'BAD_REQUEST',
-      //       data: 'Аккаунт заблокирован/удален',
-      //     });
-      //   }
+      // if (user.isDeleted) {
+      //   return res.status(StatusCodes.BAD_REQUEST).send({
+      //     status: StatusCodes.BAD_REQUEST,
+      //     message: 'BAD_REQUEST',
+      //     data: 'Аккаунт удален',
+      //   });
+      // }
       req.body = {
         ...req.body,
         access: true,
         role: user.role,
+        id: user.id,
         // user: user.toJSON(),
       };
 

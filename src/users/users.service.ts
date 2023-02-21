@@ -19,6 +19,7 @@ import {
 } from '../mailer/interfaces/email.body';
 import { RestorePasswordDto } from './dto/restore.dto';
 import * as Color from 'color';
+import { UpdateEmailDto } from './dto/update-email.dto';
 
 const length = 8;
 const numbers = /[0-9]/g;
@@ -166,11 +167,23 @@ export class UsersService {
 
       const user = await User.findOne({
         where: { email: email },
-        attributes: ['email', 'password', 'role'],
+        attributes: ['email', 'password', 'role', 'isDeleted', 'isBlocked'],
         include: { model: Verifications, attributes: ['token'] },
       });
 
       let passwordMatches = false;
+
+      if (user && user.isDeleted) {
+        throw new HttpException('Аккаунт удален', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      if (user && user.isBlocked) {
+        throw new HttpException('Аккаунт заблокирован', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
 
       if (user)
         passwordMatches = UsersService.validPassword(password, user.password);
@@ -362,8 +375,38 @@ export class UsersService {
     }
   }
 
+  // async getProfile(req) {
+  //   try {
+  //     const token = await req.headers.authorization;
+  //     const result = await jwt.verify(token, process.env.JWT);
+  //     console.log(result);
+  //     if (!!result.message) {
+  //       throw new HttpException(
+  //         'Сессия истекла или недействительна',
+  //         StatusCodes.FORBIDDEN,
+  //         {
+  //           cause: new Error('Some Error'),
+  //         },
+  //       );
+  //     }
+  //     const userProfile = await User.findOne({
+  //       where: { email: result.email },
+  //       attributes: ['email'],
+  //       include: { model: Profile, as: 'profile' },
+  //     });
+  //     // userProfile.profile.email = result.email;
+  //     // console.log(userProfile);
+  //     return userProfile.profile;
+  //   } catch (e) {
+  //     throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
+  //       cause: new Error('Some Error'),
+  //     });
+  //   }
+  // }
+
   async getProfile(req) {
     try {
+      console.log('body id is', req.body.id);
       const token = await req.headers.authorization;
       const result = await jwt.verify(token, process.env.JWT);
       console.log(result);
@@ -408,9 +451,147 @@ export class UsersService {
       }
       const user = await User.findOne({ where: { email: result.email } });
 
+      if (!!updateData.newPassword) {
+        const passwordIsValid = UsersService.validPassword(
+          updateData.oldPassword,
+          user.password,
+        );
+        if (!passwordIsValid) {
+          throw new HttpException(
+            'Текущий пароль введен неправильно',
+            StatusCodes.FORBIDDEN,
+            {
+              cause: new Error('Some Error'),
+            },
+          );
+        }
+        const salt = bcrypt.genSaltSync();
+        const passwordHash = await bcrypt.hash(updateData.newPassword, salt);
+        await user.update({ password: passwordHash });
+      }
+
+      if (!updateData.pseudonym) {
+        throw new HttpException(
+          'Псевдоним не может быть пустым',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
       const profile = await Profile.findOne({ where: { userId: user.id } });
-      await profile.update({ pseudonym: updateData.pseudonym });
+      await profile.update({
+        pseudonym: updateData.pseudonym,
+        profilePic: updateData.filename,
+      });
+      // profilePic: filename
+
       return profile;
+    } catch (e) {
+      throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async updateEmail(req, updateData: UpdateEmailDto) {
+    try {
+      const token = await req.headers.authorization;
+
+      const result = await jwt.verify(token, process.env.JWT);
+      console.log(updateData);
+      if (!!result.message) {
+        throw new HttpException(
+          'Сессия истекла или недействительна',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      const user = await User.findOne({ where: { email: result.email } });
+
+      const passwordIsValid = UsersService.validPassword(
+        updateData.password,
+        user.password,
+      );
+      if (!passwordIsValid) {
+        throw new HttpException(
+          'Текущий пароль введен неправильно',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (!checkEmail(updateData.email).correct) {
+        console.log('incorrect');
+        throw new HttpException(
+          'Вы некорректно ввели адрес электронной почты',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (user.email === updateData.email) {
+        throw new HttpException(
+          'Новая почта не должна совпадать со старой',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const userWithProvidedEmail = await User.findOne({
+        where: { email: updateData.email },
+      });
+      if (!!userWithProvidedEmail) {
+        throw new HttpException('Почта уже занята', StatusCodes.CONFLICT, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      const newVerification = await Verifications.create({ userId: user.id });
+      if (user.email) {
+        const mailBody: IEmailRegister = {
+          email: updateData.email,
+          verification: newVerification.token,
+        };
+
+        await mailerService.changeEmailConfirmation(mailBody);
+      }
+
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async delete(req, email: string) {
+    try {
+      const token = await req.headers.authorization;
+
+      const result = await jwt.verify(token, process.env.JWT);
+      console.log(email);
+      if (!!result.message) {
+        throw new HttpException(
+          'Сессия истекла или недействительна',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      const user = await User.findOne({ where: { email: result.email } });
+      await user.update({ isDeleted: true });
+
+      return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
       throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
         cause: new Error('Some Error'),

@@ -94,7 +94,7 @@ export class ChatGateway
     if (message.file) {
       const myBuffer = Buffer.from(message.file, 'base64');
 
-      writeFile(`./uploads/${dbFileName}`, myBuffer, (err) => {
+      writeFile(`./uploads/chat/${dbFileName}`, myBuffer, (err) => {
         console.log(err);
       });
     }
@@ -158,6 +158,7 @@ export class ChatGateway
       name: message.pseudonym,
       time: newMessage.createdAt,
       color: message.color,
+      profilePic: message.profilePic,
       file: file,
       roomId: message.roomId,
     };

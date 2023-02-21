@@ -83,4 +83,26 @@ export class MailerService {
       });
     }
   }
+
+  async changeEmailConfirmation(body: IEmailRegister) {
+    try {
+      const output = `
+          
+      <p>Почта вашей учетной записи успешно изменена. <a href="${process.env.MAILER_URL}users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить вашу новую почту.</a></p>
+            
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        to: body.email,
+        subject: 'Подтверждение новой почты',
+        html: output,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
 }

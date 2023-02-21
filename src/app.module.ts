@@ -12,6 +12,8 @@ import { AccessMiddleware } from './utils/middleware/access.middleware';
 import { ChatController } from './chat/chat.controller';
 import { MapObjectsModule } from './map-objects/map-objects.module';
 import { ChatRoomsModule } from './chat-rooms/chat-rooms.module';
+import { EstateObjectsModule } from './estate-objects/estate-objects.module';
+import { TradingPlatformModule } from './trading-platform/trading-platform.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { ChatRoomsModule } from './chat-rooms/chat-rooms.module';
     ChatModule,
     MapObjectsModule,
     ChatRoomsModule,
+    EstateObjectsModule,
+    TradingPlatformModule,
   ],
   controllers: [AppController],
   providers: [AppService],
