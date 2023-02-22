@@ -19,7 +19,12 @@ export class MapObject extends Model<MapObject> {
   @Column({
     type: DataType.STRING,
   })
-  phone: string;
+  phoneStationaty: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  phoneMobile: string;
 
   @Column({
     type: DataType.STRING,
