@@ -482,7 +482,7 @@ export class UsersService {
       const profile = await Profile.findOne({ where: { userId: user.id } });
       await profile.update({
         pseudonym: updateData.pseudonym,
-        profilePic: updateData.filename,
+        profilePic: updateData.filename ?? null,
       });
       // profilePic: filename
 

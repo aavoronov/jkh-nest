@@ -9,20 +9,20 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
-import { MapObjectDetails } from './map-object-details.entity';
-import { MapObjectReview } from './map-object-review.entity';
+import { MapObjectReply } from './map-object-reply.entity';
+import { MapObject } from './map-object.entity';
 
 @Table
-export class MapObject extends Model<MapObject> {
+export class MapObjectReview extends Model<MapObjectReview> {
   @Column({
-    type: DataType.GEOMETRY('Point'),
+    type: DataType.INTEGER,
   })
-  point: any;
+  rating: number;
 
   @Column({
     type: DataType.STRING,
   })
-  category: string;
+  text: string;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -30,17 +30,20 @@ export class MapObject extends Model<MapObject> {
   })
   isApproved: boolean;
 
-  @ForeignKey(() => User)
-  userId: number;
+  @BelongsTo(() => MapObject)
+  object: MapObject;
+
+  @ForeignKey(() => MapObject)
+  objectId: number;
 
   @BelongsTo(() => User)
   user: User;
 
-  @HasOne(() => MapObjectDetails)
-  objectDetails: MapObjectDetails;
+  @ForeignKey(() => User)
+  userId: number;
 
-  @HasMany(() => MapObjectReview)
-  reviews: MapObjectReview;
+  @HasMany(() => MapObjectReply)
+  replies: MapObjectReply;
 }
 
 // name        varchar(400) NOT null primary key,

@@ -1,27 +1,21 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MapObjectsService } from './map-objects.service';
 import { MapObjectsController } from './map-objects.controller';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { AccessMiddleware } from '../utils/middleware/access.middleware';
 
 @Module({
   controllers: [MapObjectsController],
   providers: [MapObjectsService],
 })
 export class MapObjectsModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(AuthMiddleware)
-  //     .forRoutes({ path: '/users/', method: RequestMethod.ALL });
-  //   consumer
-  //     .apply(AccessMiddleware)
-  //     .exclude(
-  //       { path: '/', method: RequestMethod.POST },
-  //       { path: 'auth', method: RequestMethod.POST },
-  //       { path: 'confirm', method: RequestMethod.GET },
-  //       { path: 'restore', method: RequestMethod.POST },
-  //       { path: 'reauth', method: RequestMethod.GET },
-  //       // { path: '/uploads/*', method: RequestMethod.GET },
-  //     )
-  //     .forRoutes({ path: '/users/', method: RequestMethod.ALL });
-  //   // .forRoutes(UsersController);
-  // }
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: '/', method: RequestMethod.ALL });
+    consumer
+      .apply(AccessMiddleware)
+      .exclude({ path: 'import/*', method: RequestMethod.GET })
+      .forRoutes({ path: '/', method: RequestMethod.ALL });
+  }
 }

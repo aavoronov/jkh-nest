@@ -1,26 +1,334 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateMapObjectDto } from './dto/create-map-object.dto';
 import { UpdateMapObjectDto } from './dto/update-map-object.dto';
+import * as jwt from 'jsonwebtoken';
+import { User } from '../users/entities/user.entity';
+import { MapObject } from './entities/map-object.entity';
+
+import { MapObjectDetails } from './entities/map-object-details.entity';
+import { StatusCodes } from 'http-status-codes';
+import { MapObjectReview } from './entities/map-object-review.entity';
+import { MapObjectReply } from './entities/map-object-reply.entity';
+import { Profile } from '../users/entities/profile.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { Verifications } from '../verifications/entities/verification.entity';
+import { CreateReplyDto } from './dto/create-reply.dto';
+import { writeFile } from 'fs';
+import { Base64 } from 'js-base64';
 
 @Injectable()
 export class MapObjectsService {
-  create(createMapObjectDto: CreateMapObjectDto) {
-    return 'This action adds a new mapObject';
+  private async uploadFiles(
+    files: Array<Express.Multer.File>,
+  ): Promise<string[]> {
+    try {
+      console.log(files);
+      const filenames = [];
+
+      files.forEach((item: Express.Multer.File) => {
+        let dbFileName = null;
+        // console.log(item.mimetype);
+
+        const fileName = Base64.encodeURI(
+          (Math.random() * 1000).toString() + Date.now(),
+        );
+        dbFileName =
+          fileName +
+          item.originalname.slice(item.originalname.lastIndexOf('.'));
+
+        filenames.push(dbFileName);
+
+        const buffer = item.buffer;
+        // const myBuffer = Buffer.from(item);
+        writeFile(`./uploads/map-objects/${dbFileName}`, buffer, (err) => {
+          console.log(err);
+        });
+      });
+      return filenames;
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  findAll() {
-    return `This action returns all mapObjects`;
+  async getObjects() {
+    try {
+      const objects = await MapObject.findAll({
+        attributes: ['id', 'point', 'category', 'userId', 'isApproved'],
+        // limit: 1000,
+      });
+      return objects;
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
+        cause: new Error('Some Error'),
+      });
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} mapObject`;
+  async getById(id: number) {
+    try {
+      const object = await MapObjectDetails.findOne({
+        where: { objectId: id },
+        attributes: [
+          'objectId',
+          'address',
+          'name',
+          'phoneMobile',
+          'phoneStationary',
+          'website',
+          'description',
+          'images',
+        ],
+        include: { model: MapObject, attributes: ['category', 'point'] },
+      });
+
+      const reviews = await MapObjectReview.findAll({
+        where: { objectId: object.objectId },
+        attributes: ['id', 'text', 'createdAt', 'rating'],
+
+        include: [
+          {
+            model: User,
+            attributes: ['id'],
+            include: [
+              {
+                model: Profile,
+                attributes: ['color', 'profilePic', 'pseudonym'],
+              },
+            ],
+          },
+          {
+            model: MapObjectReply,
+            as: 'replies',
+            attributes: ['id', 'text', 'createdAt'],
+            include: [
+              {
+                model: User,
+                attributes: ['id'],
+                include: [
+                  {
+                    model: Profile,
+                    attributes: ['color', 'profilePic', 'pseudonym'],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const count = await MapObjectReview.findAll({
+        where: { objectId: object.objectId },
+        attributes: ['rating'],
+      });
+
+      let rating = 0;
+      count.forEach((item) => (rating += item.rating));
+
+      console.log(count.length ? rating / count.length : 0);
+
+      return {
+        object,
+        reviews,
+        rating: count.length ? rating / count.length : 0,
+        count: count.length,
+      };
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
+        cause: new Error('Some Error'),
+      });
+    }
   }
 
-  update(id: number, updateMapObjectDto: UpdateMapObjectDto) {
-    return `This action updates a #${id} mapObject`;
+  async getAround() {
+    const query = `
+  SELECT
+      "id", "createdAt", ST_DistanceSphere(ST_MakePoint(:latitude, :longitude), "point") AS distance
+  FROM
+      "MapObjects"
+  WHERE
+  ST_DistanceSphere(ST_MakePoint(:latitude, :longitude), "point") < :maxDistance
+  `;
+    const latitude = '55.6';
+    const longitude = '37.9';
+
+    return await MapObject.sequelize.query(query, {
+      replacements: {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        maxDistance: 10 * 10000,
+      },
+      // type: MapObjectGisTest.sequelize.QueryTypes.SELECT,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} mapObject`;
+  // this.getAround = function (latitude, longitude) {
+  //   const query = `
+  // SELECT
+  //     "id", "createdAt", ST_Distance_Sphere(ST_MakePoint(:latitude, :longitude), "point") AS distance
+  // FROM
+  //     "SampleModels"
+  // WHERE
+  //     ST_Distance_Sphere(ST_MakePoint(:latitude, :longitude), "point") < :maxDistance
+  // `;
+
+  //   return model.sequelize.query(query, {
+  //     replacements: {
+  //       latitude: parseFloat(latitude),
+  //       longitude: parseFloat(longitude),
+  //       maxDistance: 10 * 1000,
+  //     },
+  //     type: model.sequelize.QueryTypes.SELECT,
+  //   });
+  // };
+
+  async createObject(
+    req: any,
+    createObjectDto: CreateMapObjectDto,
+    files: Array<Express.Multer.File>,
+  ) {
+    try {
+      const {
+        name,
+        description,
+        category,
+        phoneStationary,
+        phoneMobile,
+        website,
+        latitude,
+        longitude,
+        address,
+        sendToModerator,
+        modComment,
+      } = createObjectDto;
+      // console.log(coordinates);
+      const dbFilenames = await this.uploadFiles(files);
+      const images = dbFilenames.length ? dbFilenames : null;
+      console.log(images);
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+      });
+
+      // createObjectDto.images = images;
+
+      const object = await MapObject.create({
+        category,
+        userId: user.id,
+        point: { type: 'Point', coordinates: [latitude, longitude] },
+      });
+
+      const objectDetails = await MapObjectDetails.create({
+        name,
+        description,
+        phoneStationary,
+        phoneMobile,
+        images: images,
+        website,
+        address,
+        objectId: object.id,
+      });
+
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
+        cause: new Error('Some Error'),
+      });
+    }
+
+    // return `created object ${id}`;
+  }
+
+  async createReview(req: any, createReviewDto: CreateReviewDto) {
+    try {
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+        include: [{ model: Verifications }],
+      });
+
+      const { objectId, review, rating } = createReviewDto;
+
+      const existingReview = await MapObjectReview.findOne({
+        where: { userId: user.id, objectId: objectId },
+      });
+
+      if (!!existingReview) {
+        throw new HttpException(
+          'Вы уже оставляли отзыв на этот объект',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const newReview = await MapObjectReview.create({
+        userId: user.id,
+        objectId: +objectId,
+        text: review,
+        rating,
+      });
+
+      console.log(!!newReview);
+
+      console.log(!!existingReview);
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, StatusCodes.CONFLICT, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async createReply(req: any, createReplyDto: CreateReplyDto) {
+    try {
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+        include: [{ model: Verifications }],
+      });
+      const { reviewId, reply } = createReplyDto;
+      console.log(reviewId, reply);
+
+      const existingReply = await MapObjectReply.findOne({
+        where: { userId: user.id, reviewId: reviewId },
+      });
+
+      if (!!existingReply) {
+        throw new HttpException(
+          'Вы уже оставляли ответ на этот отзыв',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const newReply = await MapObjectReply.create({
+        userId: user.id,
+        reviewId: +reviewId,
+        text: reply,
+      });
+
+      if (!newReply) {
+        throw new HttpException('Ошибка', StatusCodes.BAD_GATEWAY, {
+          cause: new Error('Some Error'),
+        });
+      }
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
+        cause: new Error('Some Error'),
+      });
+    }
+    // return `created reply for review ${id}`;
   }
 }

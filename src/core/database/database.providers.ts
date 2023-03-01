@@ -15,6 +15,9 @@ import { TradingPlatformCategory } from '../../trading-platform/entities/trading
 import { TradingPlatformProduct } from '../../trading-platform/entities/trading-platform-product.entity';
 import { TradingPlatformSubcategory } from '../../trading-platform/entities/trading-platform-subcategory.entity';
 import { TradingPlatformFavorites } from '../../trading-platform/entities/trading-platform-favorites.entity';
+import { MapObjectDetails } from '../../map-objects/entities/map-object-details.entity';
+import { MapObjectReply } from '../../map-objects/entities/map-object-reply.entity';
+import { MapObjectReview } from '../../map-objects/entities/map-object-review.entity';
 
 const entities: any[] = [
   User,
@@ -24,6 +27,9 @@ const entities: any[] = [
   ChatRoom,
   RoomAccess,
   MapObject,
+  MapObjectDetails,
+  MapObjectReview,
+  MapObjectReply,
   EstateObject,
   EstateObjectRights,
   TradingPlatformCategory,

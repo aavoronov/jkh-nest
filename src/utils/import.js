@@ -1,8 +1,8 @@
 // import { readFileSync } from 'fs';
 const { readFileSync } = require('fs');
 
-function test() {
-  var rawData = readFileSync('./src/utils/export-base_demo_fax8br.csv')
+function test(file) {
+  var rawData = readFileSync(`./src/utils/${file}.csv`)
     .toString() // convert Buffer to string
     .split('\n') // split string to lines
     .map((e) => e.trim()) // remove white spaces for each line
@@ -10,11 +10,18 @@ function test() {
       e
         .split(';')
         .map((e, index) => {
-          return index === 1 || index === 3
-            ? e.trim().split(',')[0]
-            : index === 4
-            ? e.trim().split(' ')
-            : e.trim();
+          if (index === 1 || index === 2 || index === 4) {
+            // console.log(e.trim().split(',')[0]);
+            return e.trim().split(',')[0];
+          }
+          if (index === 5) {
+            // console.log(e.trim().split(' '));
+            return e.trim().split(' ');
+          }
+          if (index === 0 || index === 3 || index === 6) {
+            // console.log(e.trim());
+            return e.trim();
+          }
         })
         .flat(),
     ); // split each line to array
@@ -23,7 +30,7 @@ function test() {
 
   //   rawData.forEach((i) => '')
 
-  //   console.log(rawData);
+  // console.log(rawData);
   //   console.log(JSON.stringify(data, '', 2)); // as json
   //   console.log('test');
   return rawData;
