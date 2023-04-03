@@ -1,5 +1,9 @@
 import { Injectable, BadGatewayException } from '@nestjs/common';
-import { IEmailRegister, IEmailUpdatePassword } from './interfaces/email.body';
+import {
+  IEmailChatAdApproval,
+  IEmailRegister,
+  IEmailUpdatePassword,
+} from './interfaces/email.body';
 import { HttpException } from '@nestjs/common';
 
 import { createTransport } from 'nodemailer';
@@ -95,6 +99,94 @@ export class MailerService {
         from: `ЖКХ Консьерж <${user}@yandex.ru>`,
         to: body.email,
         subject: 'Подтверждение новой почты',
+        html: output,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async approvedWorkerCredentialsEmail(body: IEmailUpdatePassword) {
+    try {
+      const output = `
+            <p>Ваш пароль от учетной записи:</p>
+            <p>${body.password}</p>
+            <p>Рекомендуем сменить его на более надежный.</p>
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        to: body.email,
+        subject: 'Ваши данные учетной записи рабочего',
+        html: output,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async newWorkerApplication(id: number) {
+    try {
+      const output = `
+            <p>Поступила новая заявка на регистрацию рабочего аккаунта.</p>
+            <p>Просмотреть можно по <a href='${process.env.ADMIN_URL}resources/WorkerProfiles/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'Новая заявка рабочего аккаунта',
+        html: output,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async newChatAdApplication(id: number) {
+    try {
+      const output = `
+            <p>Поступила новая заявка на рекламу в домовых чатах.</p>
+            <p>Просмотреть можно по <a href='${process.env.ADMIN_URL}resources/ChatAds/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'Новая заявка на рекламу в чатах',
+        html: output,
+      };
+
+      console.log('sent');
+
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async notifyOfChatAdApproval(body: IEmailChatAdApproval) {
+    try {
+      const output = `
+            <p>Ваше объявление домового чата</p>
+            <p>${body.description}</p>
+            <p>одобрено модератором.</p>
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        to: body.email,
+        subject: 'Одобрено объявление домового чата',
         html: output,
       };
 

@@ -1,4 +1,9 @@
-import { HttpException, Injectable, UploadedFiles } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  UploadedFiles,
+} from '@nestjs/common';
 import { CreateTradingPlatformProductDto } from './dto/create-trading-platform-product.dto';
 import { UpdateTradingPlatformProductDto } from './dto/update-trading-platform-product.dto';
 import { TradingPlatformCategory } from './entities/trading-platform-category.entity';
@@ -13,9 +18,13 @@ import { StatusCodes } from 'http-status-codes';
 import { Op } from 'sequelize';
 import { TradingPlatformFavorites } from './entities/trading-platform-favorites.entity';
 import { Sequelize } from 'sequelize-typescript';
+import { TransactionsService } from '../transactions/transactions.service';
+import { TransactionTypes } from '../transactions/dto/create-transaction.dto';
+import { Transaction } from '../transactions/entities/transaction.entity';
 
 @Injectable()
 export class TradingPlatformService {
+  constructor(private readonly transactionsService: TransactionsService) {}
   private async uploadFiles(
     files: Array<Express.Multer.File>,
   ): Promise<string[]> {
@@ -106,6 +115,18 @@ export class TradingPlatformService {
         promoPrimary,
         isVip,
       } = createTradingPlatformProductDto;
+
+      const re = new RegExp(/^[0-9\b]+$/);
+      if (!re.test(price)) {
+        throw new HttpException(
+          'Указанная цена имеет неверный формат',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
       // console.log(isVip);
       const paidUntil = new Date();
       paidUntil.setDate(paidUntil.getDate() + +promoPrimary);
@@ -120,7 +141,7 @@ export class TradingPlatformService {
         wts,
         description,
         location,
-        price,
+        price: +price,
         phone,
         hasWhatsapp,
         hasTelegram,
@@ -128,6 +149,43 @@ export class TradingPlatformService {
         isVip,
         userId: user.id,
       });
+
+      let basis: TransactionTypes = TransactionTypes.default;
+      let sum = 0;
+
+      if (isVip) {
+        sum += 500;
+        if (+promoPrimary === 0) {
+          basis = TransactionTypes.TPVip;
+        }
+        if (+promoPrimary === 3) {
+          sum += 500;
+          basis = TransactionTypes.TPTop3dVip;
+        }
+        if (+promoPrimary === 7) {
+          sum += 1000;
+          basis = TransactionTypes.TPTop7dVip;
+        }
+      } else {
+        if (+promoPrimary === 3) {
+          sum += 500;
+          basis = TransactionTypes.TPTop3d;
+        }
+        if (+promoPrimary === 7) {
+          sum += 1000;
+          basis = TransactionTypes.TPTop7d;
+        }
+      }
+
+      if (!!promoPrimary || isVip) {
+        const transaction = await this.transactionsService.createTransaction({
+          sum: sum,
+          basis: basis,
+          userId: user.id,
+          objectId: product.id,
+        });
+      }
+
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
       // console.log(e);
@@ -187,17 +245,7 @@ export class TradingPlatformService {
         });
         const subcategoriesIndices = subcategories.map((item) => item.id);
         whereStatement.subcategoryId = subcategoriesIndices;
-        // whereStatement.ispaid = [
-        //   Sequelize.literal(
-        //     `CASE WHEN "isPaidUntil" > current_timestamp THEN true ELSE false END`,
-        //   ),
-        //   'isPaid',
-        // ];
       }
-      // whereStatement['$favorites.userId$'] = user.id;
-
-      //? ok
-      //page, subcategoryId, wts, condition, pmin, pmax, searchQuery
 
       const products = await TradingPlatformProduct.findAll({
         where: whereStatement,
@@ -272,8 +320,17 @@ export class TradingPlatformService {
           'price',
           'location',
           'createdAt',
+          [
+            Sequelize.literal(
+              `CASE WHEN "isPaidUntil" > current_timestamp THEN true ELSE false END`,
+            ),
+            'ispaid',
+          ],
         ],
-        order: [['id', 'DESC']],
+        order: [
+          [Sequelize.literal('isPaid'), 'DESC'],
+          ['id', 'DESC'],
+        ],
         limit: limit,
         offset: offset,
       });
@@ -445,9 +502,13 @@ export class TradingPlatformService {
       const likes = await TradingPlatformFavorites.count({
         where: { productId: id },
       });
-      console.log(likes);
 
-      return product;
+      const resData = {
+        ...product.toJSON(),
+        likes: likes,
+      };
+
+      return resData;
     } catch (e) {
       console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
@@ -502,7 +563,7 @@ export class TradingPlatformService {
       wts,
       description,
       location,
-      price,
+      price: +price,
       phone,
       hasWhatsapp,
       hasTelegram,

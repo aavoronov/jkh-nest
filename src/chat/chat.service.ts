@@ -15,6 +15,8 @@ import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { Op, Sequelize } from 'sequelize';
 import * as async from 'async';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
 
 @Injectable()
 export class ChatService {
@@ -80,7 +82,16 @@ export class ChatService {
                 as: 'profile',
                 attributes: ['pseudonym', 'color', 'profilePic'],
               },
+              {
+                model: WorkerProfile,
+                as: 'workerProfile',
+                attributes: ['name', 'color', 'profilePic'],
+              },
             ],
+          },
+          {
+            model: ChatAd,
+            attributes: ['link'],
           },
         ],
         where: { roomId: room },
@@ -149,7 +160,16 @@ export class ChatService {
                 as: 'profile',
                 attributes: ['pseudonym', 'color', 'profilePic'],
               },
+              {
+                model: WorkerProfile,
+                as: 'workerProfile',
+                attributes: ['name', 'color', 'profilePic'],
+              },
             ],
+          },
+          {
+            model: ChatAd,
+            attributes: ['link'],
           },
         ],
         where: { roomId: room },

@@ -11,9 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ChatRoomsService } from './chat-rooms.service';
-import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
-import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 
 @ApiTags('chat-rooms')
 @Controller('chat-rooms')
@@ -23,11 +21,6 @@ export class ChatRoomsController {
   @Get()
   getRooms(@Req() req: any) {
     return this.chatRoomsService.getRooms(req);
-  }
-
-  @Post()
-  create(@Body() createChatRoomDto: CreateChatRoomDto) {
-    return this.chatRoomsService.create(createChatRoomDto);
   }
 
   @Get('my/:email')
@@ -50,21 +43,8 @@ export class ChatRoomsController {
     return this.chatRoomsService.getUsers(id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chatRoomsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateChatRoomDto: UpdateChatRoomDto,
-  ) {
-    return this.chatRoomsService.update(+id, updateChatRoomDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chatRoomsService.remove(+id);
+  @Get('ad-prices')
+  getAdPrices(@Req() req: any) {
+    return this.chatRoomsService.getAdPrices(req);
   }
 }

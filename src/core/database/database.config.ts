@@ -3,6 +3,15 @@ import { IDatabaseConfig } from './interfaces/dbConfig.interface';
 
 dotenv.config();
 
+export interface IConfigSignature {
+  username: string;
+  password: string;
+  database: string;
+  host: string;
+  port: string | number;
+  dialect: string;
+}
+
 export const databaseConfig: IDatabaseConfig = {
   development: {
     username: process.env.DB_USER,

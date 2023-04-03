@@ -21,7 +21,7 @@ export class ChatRoom extends Model<ChatRoom> {
   @ApiProperty()
   @Column({
     type: DataType.STRING,
-    unique: true,
+    unique: false,
     allowNull: true,
   })
   address: string;
@@ -37,4 +37,7 @@ export class ChatRoom extends Model<ChatRoom> {
 
   @HasMany(() => EstateObject)
   estateObject: EstateObject;
+
+  @HasMany(() => RoomAccess)
+  accesses: RoomAccess;
 }

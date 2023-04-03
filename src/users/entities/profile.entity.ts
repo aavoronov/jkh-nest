@@ -43,12 +43,6 @@ export class Profile extends Model<Profile> {
   })
   profilePic: string;
 
-  @Column({
-    type: DataType.ENUM,
-    values: ['male', 'female'],
-  })
-  sex: string;
-
   // @BelongsTo(() => User)
   @ForeignKey(() => User)
   userId: number;

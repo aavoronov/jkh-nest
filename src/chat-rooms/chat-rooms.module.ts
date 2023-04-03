@@ -3,6 +3,7 @@ import { ChatRoomsService } from './chat-rooms.service';
 import { ChatRoomsController } from './chat-rooms.controller';
 import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
+
 @Module({
   controllers: [ChatRoomsController],
   providers: [ChatRoomsService],

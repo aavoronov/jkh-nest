@@ -56,6 +56,7 @@ export class MapObjectsService {
         attributes: ['id', 'point', 'category', 'userId', 'isApproved'],
         // limit: 1000,
       });
+      console.log(objects[0].point);
       return objects;
     } catch (e) {
       console.log(e);
@@ -217,7 +218,8 @@ export class MapObjectsService {
       const object = await MapObject.create({
         category,
         userId: user.id,
-        point: { type: 'Point', coordinates: [latitude, longitude] },
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+        //flipped
       });
 
       const objectDetails = await MapObjectDetails.create({

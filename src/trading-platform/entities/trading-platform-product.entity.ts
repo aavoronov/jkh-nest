@@ -9,7 +9,6 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { TradingPlatformCategory } from './trading-platform-category.entity';
 import { TradingPlatformSubcategory } from './trading-platform-subcategory.entity';
 import { TradingPlatformFavorites } from './trading-platform-favorites.entity';
 
@@ -42,10 +41,10 @@ export class TradingPlatformProduct extends Model<TradingPlatformProduct> {
 
   @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.FLOAT,
     allowNull: false,
   })
-  price: string;
+  price: number;
 
   @ApiProperty()
   @Column({

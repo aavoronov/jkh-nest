@@ -20,6 +20,11 @@ import {
 import { RestorePasswordDto } from './dto/restore.dto';
 import * as Color from 'color';
 import { UpdateEmailDto } from './dto/update-email.dto';
+import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
+import { WorkerProfile } from './entities/worker-profile.entity';
+import { Op } from 'sequelize';
+import { Base64 } from 'js-base64';
+import { writeFile } from 'fs';
 
 const length = 8;
 const numbers = /[0-9]/g;
@@ -30,6 +35,28 @@ const mailerService = new MailerService();
 
 @Injectable()
 export class UsersService {
+  private async uploadFile(file: Express.Multer.File): Promise<string> {
+    try {
+      // console.log(file);
+
+      const fileName = Base64.encodeURI(
+        (Math.random() * 1000).toString() + Date.now(),
+      );
+      const dbFileName =
+        fileName + file.originalname.slice(file.originalname.lastIndexOf('.'));
+
+      const buffer = file.buffer;
+
+      writeFile(`./uploads/workers/${dbFileName}`, buffer, (err) => {
+        console.log(err);
+      });
+
+      return dbFileName;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   private static validPassword(password: string, userPassword: string) {
     return bcrypt.compareSync(password, userPassword);
   }
@@ -168,7 +195,10 @@ export class UsersService {
       const user = await User.findOne({
         where: { email: email },
         attributes: ['email', 'password', 'role', 'isDeleted', 'isBlocked'],
-        include: { model: Verifications, attributes: ['token'] },
+        include: [
+          { model: Verifications, attributes: ['token'] },
+          { model: WorkerProfile, attributes: ['isResolved'] },
+        ],
       });
 
       let passwordMatches = false;
@@ -208,6 +238,26 @@ export class UsersService {
           },
         );
         // console.log('verification exists');
+      }
+
+      if (user.role === 'admin') {
+        throw new HttpException(
+          'Нет доступа к публичной части',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (user.role !== 'user' && !user.workerProfile.isResolved) {
+        throw new HttpException(
+          'Ваша учетная запись еще не одобрена администратором. Пожалуйста, ожидайте email',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
       }
 
       const accessToken = jwt.sign(user.toJSON(), process.env.JWT, {
@@ -289,28 +339,7 @@ export class UsersService {
           email: data.email,
         },
       });
-      if (user) {
-        const salt = bcrypt.genSaltSync();
-        const randomPassword = Math.random().toString(36).slice(-8);
-        const randomPasswordCrypt = bcrypt.hashSync(randomPassword, salt);
-
-        await User.update(
-          {
-            password: randomPasswordCrypt,
-          },
-          { where: { id: user.id } },
-        );
-        const response = {
-          status: StatusCodes.OK,
-          message: ReasonPhrases.OK,
-        };
-        const bodyEmail: IEmailUpdatePassword = {
-          password: randomPassword,
-          email: user.email,
-        };
-        await mailerService.restorePasswordMail(bodyEmail);
-        return response;
-      } else {
+      if (!user) {
         throw new HttpException(
           'Аккаунт не существует',
           StatusCodes.NOT_FOUND,
@@ -319,6 +348,26 @@ export class UsersService {
           },
         );
       }
+      const salt = bcrypt.genSaltSync();
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const randomPasswordCrypt = bcrypt.hashSync(randomPassword, salt);
+
+      await User.update(
+        {
+          password: randomPasswordCrypt,
+        },
+        { where: { id: user.id } },
+      );
+      const response = {
+        status: StatusCodes.OK,
+        message: ReasonPhrases.OK,
+      };
+      const bodyEmail: IEmailUpdatePassword = {
+        password: randomPassword,
+        email: user.email,
+      };
+      await mailerService.restorePasswordMail(bodyEmail);
+      return response;
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -375,38 +424,8 @@ export class UsersService {
     }
   }
 
-  // async getProfile(req) {
-  //   try {
-  //     const token = await req.headers.authorization;
-  //     const result = await jwt.verify(token, process.env.JWT);
-  //     console.log(result);
-  //     if (!!result.message) {
-  //       throw new HttpException(
-  //         'Сессия истекла или недействительна',
-  //         StatusCodes.FORBIDDEN,
-  //         {
-  //           cause: new Error('Some Error'),
-  //         },
-  //       );
-  //     }
-  //     const userProfile = await User.findOne({
-  //       where: { email: result.email },
-  //       attributes: ['email'],
-  //       include: { model: Profile, as: 'profile' },
-  //     });
-  //     // userProfile.profile.email = result.email;
-  //     // console.log(userProfile);
-  //     return userProfile.profile;
-  //   } catch (e) {
-  //     throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
-  //       cause: new Error('Some Error'),
-  //     });
-  //   }
-  // }
-
-  async getProfile(req) {
+  async getProfile(req: any) {
     try {
-      console.log('body id is', req.body.id);
       const token = await req.headers.authorization;
       const result = await jwt.verify(token, process.env.JWT);
       console.log(result);
@@ -419,14 +438,29 @@ export class UsersService {
           },
         );
       }
-      const userProfile = await User.findOne({
-        where: { email: result.email },
-        attributes: ['email'],
-        include: { model: Profile, as: 'profile' },
-      });
+
+      let userProfile;
+
+      if (result.role === 'user') {
+        userProfile = await User.findOne({
+          where: { email: result.email },
+          attributes: ['email'],
+          include: { model: Profile, as: 'profile' },
+        });
+      } else {
+        userProfile = await User.findOne({
+          where: { email: result.email },
+          attributes: ['email', 'phone'],
+          include: {
+            model: WorkerProfile,
+            as: 'workerProfile',
+            attributes: ['name', 'color', 'profilePic', 'address', 'balance'],
+          },
+        });
+      }
       // userProfile.profile.email = result.email;
       // console.log(userProfile);
-      return userProfile.profile;
+      return result.role === 'user' ? userProfile.profile : userProfile;
     } catch (e) {
       throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
         cause: new Error('Some Error'),
@@ -434,12 +468,12 @@ export class UsersService {
     }
   }
 
-  async update(req, updateData: UpdateUserDto) {
+  async update(req: any, updateData: UpdateUserDto) {
     try {
+      console.log(updateData);
       const token = await req.headers.authorization;
 
       const result = await jwt.verify(token, process.env.JWT);
-      console.log(updateData);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -450,6 +484,8 @@ export class UsersService {
         );
       }
       const user = await User.findOne({ where: { email: result.email } });
+
+      console.log(result);
 
       if (!!updateData.newPassword) {
         const passwordIsValid = UsersService.validPassword(
@@ -479,11 +515,22 @@ export class UsersService {
           },
         );
       }
-      const profile = await Profile.findOne({ where: { userId: user.id } });
-      await profile.update({
-        pseudonym: updateData.pseudonym,
-        profilePic: updateData.filename ?? null,
-      });
+      let profile;
+
+      if (result.role === 'user') {
+        profile = await Profile.findOne({ where: { userId: user.id } });
+        await profile.update({
+          pseudonym: updateData.pseudonym,
+          profilePic: updateData.filename ?? null,
+        });
+      } else {
+        profile = await WorkerProfile.findOne({ where: { userId: user.id } });
+        await profile.update({
+          name: updateData.pseudonym,
+          profilePic: updateData.filename ?? null,
+        });
+      }
+
       // profilePic: filename
 
       return profile;
@@ -494,9 +541,10 @@ export class UsersService {
     }
   }
 
-  async updateEmail(req, updateData: UpdateEmailDto) {
+  async updateEmail(req: any, updateData: UpdateEmailDto) {
     try {
       const token = await req.headers.authorization;
+      console.log(token);
 
       const result = await jwt.verify(token, process.env.JWT);
       console.log(updateData);
@@ -557,6 +605,7 @@ export class UsersService {
 
       const newVerification = await Verifications.create({ userId: user.id });
       if (user.email) {
+        user.update({ email: updateData.email });
         const mailBody: IEmailRegister = {
           email: updateData.email,
           verification: newVerification.token,
@@ -573,12 +622,11 @@ export class UsersService {
     }
   }
 
-  async delete(req, email: string) {
+  async delete(req: any) {
     try {
       const token = await req.headers.authorization;
 
       const result = await jwt.verify(token, process.env.JWT);
-      console.log(email);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -588,6 +636,8 @@ export class UsersService {
           },
         );
       }
+
+      console.log(result.email);
       const user = await User.findOne({ where: { email: result.email } });
       await user.update({ isDeleted: true });
 
@@ -599,15 +649,221 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async createWorkerApplication(
+    createWorkerProfileDto: CreateWorkerProfileDto,
+    files: {
+      inn: Express.Multer.File;
+      contract: Express.Multer.File;
+      snils: Express.Multer.File;
+    },
+  ) {
+    const {
+      name,
+      email,
+      phone,
+      type,
+      riasToken,
+      latitude,
+      longitude,
+      address,
+    } = createWorkerProfileDto;
+    let dbType;
+    switch (type) {
+      case type:
+        'Для УК, ТСЖ';
+        dbType = 'uk';
+        break;
+
+      case type:
+        'Для Управляющего по дому';
+        dbType = 'upravdom';
+        break;
+
+      case type:
+        'Для рекламодателей';
+        dbType = 'admakers';
+        break;
+
+      case type:
+        'Для магазинов';
+        dbType = 'stores';
+        break;
+
+      case type:
+        'Для представителей бизнеса';
+        dbType = 'business';
+        break;
+
+      default:
+        break;
+    }
+
+    try {
+      const existingApplication = await User.findOne({
+        where: {
+          [Op.or]: [{ email: email }, { phone: phone }],
+        },
+      });
+      if (!!existingApplication)
+        if (existingApplication.role === 'user') {
+          throw new HttpException(
+            'Пользователь с указанными данными уже существует',
+            StatusCodes.CONFLICT,
+            {
+              cause: new Error('Some Error'),
+            },
+          );
+        } else {
+          throw new HttpException(
+            'Заявка с указанными телефоном и/или почтой уже была подана. Ожидайте одобрения',
+            StatusCodes.CONFLICT,
+            {
+              cause: new Error('Some Error'),
+            },
+          );
+        }
+
+      if (!!riasToken) {
+        const checkTokenExistence = await WorkerProfile.findOne({
+          where: {
+            riasToken: riasToken,
+          },
+        });
+
+        if (!!checkTokenExistence) {
+          throw new HttpException(
+            'Указанный токен РИАС ЖКХ уже используется',
+            StatusCodes.CONFLICT,
+            {
+              cause: new Error('Some Error'),
+            },
+          );
+        }
+      }
+
+      const re = /^\S+@\S+\.\S+$/;
+      if (phone.includes('_')) {
+        throw new HttpException(
+          'Поле телефона заполнено не полностью',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      if (!re.test(email)) {
+        throw new HttpException(
+          'Почта введена некорректно',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const docs: Partial<{
+        inn: string;
+        contract: string;
+        snils: string;
+      }> = {};
+      for (const item in files) {
+        const dbName = await this.uploadFile(files[item][0]);
+        Object.assign(docs, { [item]: dbName });
+      }
+      const { inn, contract, snils } = docs;
+
+      // const newApplication = await WorkerProfile.create({
+      //   name,
+      //   email,
+      //   phone,
+      //   type,
+      //   inn,
+      //   contract,
+      //   snils,
+      // });
+
+      let randomColor: Color, pastelColor: Color, contrast: number;
+      while (1) {
+        randomColor = Color.rgb(
+          UsersService.getRandomInt(255),
+          UsersService.getRandomInt(255),
+          UsersService.getRandomInt(255),
+        );
+        pastelColor = randomColor.saturate(0.5).mix(Color('white'), 0.2);
+        contrast = pastelColor.contrast(Color('white'));
+        if (contrast > 2) break;
+      }
+
+      const newApplication = await User.create({
+        email,
+        phone,
+        password: 'no-access',
+        role: dbType,
+      });
+
+      const newProfile = await WorkerProfile.create({
+        userId: newApplication.id,
+        inn,
+        snils,
+        contract,
+        name,
+        riasToken: riasToken ?? null,
+        address: address,
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+        //flipped
+        color: pastelColor.hex(),
+      });
+
+      if (!newApplication || !newProfile) {
+        throw new HttpException(
+          'Ошибка сервера. Пожалуйста, повторите попытку позже',
+          StatusCodes.BAD_GATEWAY,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      await newProfile.reload();
+
+      // await this.approveWorkerOrResetTheirPassword(newApplication.id);
+      await mailerService.newWorkerApplication(newProfile.id);
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
+        cause: new Error('Some Error'),
+      });
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+  async approveWorkerOrResetTheirPassword(id: number) {
+    // if token.role === 'admin'
+    try {
+      console.log(id);
+      const worker = await User.findOne({
+        where: { id },
+        include: { model: WorkerProfile, as: 'workerProfile' },
+      });
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+      const salt = bcrypt.genSaltSync();
+      const randomPassword = Math.random().toString(36).slice(-10);
+      const randomPasswordCrypt = bcrypt.hashSync(randomPassword, salt);
+
+      console.log(randomPassword);
+
+      await worker.update({ password: randomPasswordCrypt });
+      await WorkerProfile.update(
+        { isResolved: true },
+        { where: { userId: id } },
+      );
+
+      const bodyEmail: IEmailUpdatePassword = {
+        password: randomPassword,
+        email: worker.email,
+      };
+      await mailerService.approvedWorkerCredentialsEmail(bodyEmail);
+      return 'ok';
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

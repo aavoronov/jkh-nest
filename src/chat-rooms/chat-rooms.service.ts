@@ -5,13 +5,13 @@ import { EstateObjectRights } from '../estate-objects/entities/estate-object-rig
 import { EstateObject } from '../estate-objects/entities/estate-object.entity';
 import { Profile } from '../users/entities/profile.entity';
 import { User } from '../users/entities/user.entity';
-import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
-import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 import { ChatRoom } from './entities/chat-room.entity';
 import { RoomAccess } from './entities/room-access.entity';
 import * as jwt from 'jsonwebtoken';
 import { Verifications } from '../verifications/entities/verification.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { GenericData } from '../generic-data/entities/generic-data.entity';
 
 @Injectable()
 export class ChatRoomsService {
@@ -196,19 +196,180 @@ export class ChatRoomsService {
     }
   }
 
-  create(createChatRoomDto: CreateChatRoomDto) {
-    return 'This action adds a new chatRoom';
-  }
+  async getAdPrices(req: any): Promise<any[]> {
+    try {
+      // console.log(radii);
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+        include: [{ model: WorkerProfile }],
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} chatRoom`;
-  }
+      const companyCoordinates = user.workerProfile.point.coordinates;
+      const companyId = user.workerProfile.id;
 
-  update(id: number, updateChatRoomDto: UpdateChatRoomDto) {
-    return `This action updates a #${id} chatRoom`;
-  }
+      console.log(companyCoordinates);
 
-  remove(id: number) {
-    return `This action removes a #${id} chatRoom`;
+      const radii = await (
+        await GenericData.findOne({
+          where: { key: 'chatAdRadiusOptions' },
+        })
+      ).value
+        .slice(1, -1)
+        .split(',');
+
+      console.log(radii);
+
+      const regularPriceMultiplier = await (
+        await GenericData.findOne({
+          where: { key: 'regularPriceMultiplier' },
+        })
+      ).value;
+
+      const millionaireCityPriceMultiplier = await (
+        await GenericData.findOne({
+          where: { key: 'millionaireCityPriceMultiplier' },
+        })
+      ).value;
+
+      console.log(+regularPriceMultiplier, +millionaireCityPriceMultiplier);
+
+      const millionaireCitiesBoundaries: {
+        name: string;
+        point: [number, number];
+        radius: number;
+      }[] = [
+        { name: 'Moscow', point: [55.74749, 37.62773], radius: 21000 },
+        { name: 'Spb', point: [59.9512, 30.3405], radius: 17500 },
+        { name: 'Novosibirsk', point: [55.00576, 82.92388], radius: 12200 },
+        { name: 'Ekaterinburg', point: [56.83684, 60.6023], radius: 10000 },
+        { name: 'Kazan', point: [55.79881, 49.1519], radius: 9000 },
+        { name: 'Nizhny', point: [56.28139, 43.91207], radius: 12200 },
+        { name: 'Chelyabinsk', point: [55.18012, 61.40491], radius: 10800 },
+        { name: 'Krasnoyarsk', point: [56.01634, 92.9331], radius: 9100 },
+        { name: 'Samara', point: [53.19475, 50.20262], radius: 9600 },
+        { name: 'Ufa', point: [54.75237, 56.01324], radius: 8900 },
+        { name: 'Rostov-na-Donu', point: [47.23239, 39.72394], radius: 9450 },
+        { name: 'Omsk', point: [54.99134, 73.35479], radius: 9500 },
+        { name: 'Krasnodar', point: [45.05099, 39.01909], radius: 10900 },
+        { name: 'Voronezh', point: [51.67535, 39.19232], radius: 9600 },
+        { name: 'Perm', point: [57.98498, 56.2172], radius: 10400 },
+        { name: 'Volgograd', point: [48.76995, 44.54393], radius: 16200 },
+      ];
+
+      const getIsInCircleForOneCity = async (city: {
+        name: string;
+        point: [number, number];
+        radius: number;
+      }): Promise<boolean> => {
+        const query = `
+      SELECT
+          "id", ST_DistanceSphere(ST_MakePoint(:latitude, :longitude), "point") AS distance
+      FROM
+          "WorkerProfiles"
+      WHERE
+          "id" = ${companyId}
+      `;
+
+        const latitude = city.point[1];
+        const longitude = city.point[0];
+        // ST_FlipCoordinates(geometry geom)
+        //! important
+
+        const distance: any = await WorkerProfile.sequelize.query(query, {
+          replacements: {
+            latitude: latitude,
+            longitude: longitude,
+          },
+        });
+
+        const result: number = distance[0][0].distance;
+        console.log(city.name, result);
+
+        return city.radius > result;
+      };
+
+      const withinAMillionaireCity = await Promise.all(
+        millionaireCitiesBoundaries.map(getIsInCircleForOneCity),
+      );
+
+      console.log(withinAMillionaireCity);
+
+      const getRoomsForOneRadius = async (
+        radius: number,
+      ): Promise<{
+        radius: number;
+        chats: number;
+        ids: unknown[];
+        users: number;
+        price: number;
+      }> => {
+        const query = `
+      SELECT
+          *, ST_DistanceSphere(ST_MakePoint(:latitude, :longitude), "point") AS distance
+      FROM
+          "EstateObjects"
+      INNER JOIN 
+          "ChatRooms" AS "chat" ON "EstateObjects"."roomId" = "chat"."id"
+      WHERE
+          ST_DistanceSphere(ST_MakePoint(:latitude, :longitude), "point") < :maxDistance
+      `;
+
+        const latitude = companyCoordinates[0];
+        const longitude = companyCoordinates[1];
+        // const latitude = '55.6';
+        // const longitude = '37.9';
+
+        const chatsAround: any = await EstateObject.sequelize.query(query, {
+          replacements: {
+            latitude: latitude,
+            longitude: longitude,
+            maxDistance: radius,
+          },
+        });
+
+        const chatRooms = new Set();
+        chatsAround[0].map((item) => chatRooms.add(item.roomId));
+
+        let usersNumber = 0;
+
+        const getUsersForOneChat = async (roomId: number) => {
+          const users = await RoomAccess.count({ where: { roomId: roomId } });
+          // console.log(users);
+          usersNumber += users;
+        };
+
+        const chatsArray = Array.from(chatRooms);
+        // chatRooms.forEach(async (item) => {
+        //   const users = await RoomAccess.count({ where: { roomId: item } });
+        //   console.log(users);
+        //   usersNumber += users;
+        // });
+
+        await Promise.all(chatsArray.map(getUsersForOneChat));
+
+        // const users =
+        // console.log(estateObjects);
+        const multiplier = withinAMillionaireCity.includes(true)
+          ? +millionaireCityPriceMultiplier
+          : +regularPriceMultiplier;
+
+        return {
+          radius: radius,
+          chats: chatRooms.size,
+          ids: chatsArray,
+          users: usersNumber,
+          price: usersNumber * multiplier,
+        };
+      };
+
+      const prices = await Promise.all(radii.map(getRoomsForOneRadius));
+
+      console.log(prices);
+      return prices;
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

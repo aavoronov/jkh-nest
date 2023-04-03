@@ -37,19 +37,11 @@ export class EstateObject extends Model<EstateObject> {
   })
   address: string;
 
-  @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.GEOMETRY('Point'),
     allowNull: false,
   })
-  latitude: string;
-
-  @ApiProperty()
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  longitude: string;
+  point: any;
 
   @ApiProperty()
   @Column({

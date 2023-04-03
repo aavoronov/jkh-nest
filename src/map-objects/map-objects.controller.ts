@@ -33,7 +33,8 @@ export class MapObjectsController {
     const data = test(file);
     data.forEach(async (i) => {
       const object = await MapObject.create({
-        point: { type: 'Point', coordinates: [i[5], i[6]] },
+        point: { type: 'Point', coordinates: [i[6], i[5]] },
+        //flipped
         category: i[7],
         isApproved: true,
       });

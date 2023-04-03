@@ -15,7 +15,4 @@ export class ProfileDto {
 
   @ApiProperty()
   color: string;
-
-  @ApiProperty()
-  sex: string;
 }

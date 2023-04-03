@@ -1,4 +1,4 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import {
   OnGatewayInit,
   OnGatewayConnection,
@@ -10,27 +10,34 @@ import { MessageBody, WebSocketServer } from '@nestjs/websockets/decorators';
 import { writeFile } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import { Base64 } from 'js-base64';
-import { Namespace, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { User } from '../users/entities/user.entity';
 import { ChatService } from './chat.service';
 import { Message } from './entities/message.entity';
 import { IMessageBody } from './interfaces/interface';
+import { instrument } from '@socket.io/admin-ui';
 
 @WebSocketGateway({ namespace: 'chat' })
+@Injectable()
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private readonly chatService: ChatService,
+    // private readonly chatService: ChatService,
     private readonly chatRoomsService: ChatRoomsService,
   ) {}
 
   @WebSocketServer() io: Namespace;
+  // @WebSocketServer() io: Server;
 
   afterInit() {
     console.log('initialized');
+    // instrument(this.io, {
+    //   auth: false,
+    //   mode: 'development',
+    // });
   }
 
   handleConnection(client: Socket): void {
@@ -142,8 +149,8 @@ export class ChatGateway
 
     //! --------------------------------------------- //
 
-    const time = new Date();
-    console.log(time);
+    // const time = new Date();
+    // console.log(time);
 
     // const file = !!message.file
     //   ? `data:image/${message.filename.slice(

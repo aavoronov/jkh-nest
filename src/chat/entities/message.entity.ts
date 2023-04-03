@@ -1,3 +1,4 @@
+import { ChatAd } from '../../chat-ad/entities/chat-ad.entity';
 import {
   Table,
   Column,
@@ -33,4 +34,10 @@ export class Message extends Model<Message> {
 
   @BelongsTo(() => ChatRoom)
   room: ChatRoom;
+
+  @BelongsTo(() => ChatAd)
+  chatAd: ChatAd;
+
+  @ForeignKey(() => ChatAd)
+  chatAdId: number;
 }

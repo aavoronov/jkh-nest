@@ -93,19 +93,13 @@ export class EstateObjectsService {
       where: {
         address: address,
         apartment: apartment,
-        latitude: latitude,
-        longitude: longitude,
+        // point: { type: 'Point', coordinates: [+latitude, +longitude] },
+        // latitude: latitude,
+        // longitude: longitude,
       },
     });
 
     if (!!object) {
-      // throw new HttpException(
-      //   'Вы уже зарегистрировали этот объект',
-      //   StatusCodes.CONFLICT,
-      //   {
-      //     cause: new Error('Some Error'),
-      //   },
-      // );
       console.log('object exists');
     } else {
       object = await EstateObject.create({
@@ -113,8 +107,8 @@ export class EstateObjectsService {
         apartment: apartment,
         // account: account,
         roomId: chatRoom.id,
-        latitude: latitude,
-        longitude: longitude,
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+        //flipped
       });
     }
 
@@ -157,7 +151,7 @@ export class EstateObjectsService {
     return { status: StatusCodes.OK, text: 'success' };
   }
 
-  async getObjects(req) {
+  async getObjects(req: any) {
     const token = req.headers.authorization;
     const result = jwt.verify(token, process.env.JWT);
     const user = await User.findOne({
@@ -251,8 +245,8 @@ export class EstateObjectsService {
         apartment: apartment,
         // account: account,
         roomId: chatRoom.id,
-        latitude: latitude,
-        longitude: longitude,
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+        //flipped
       });
     } else {
       throw new HttpException('Что-то пошло не так', StatusCodes.BAD_REQUEST, {

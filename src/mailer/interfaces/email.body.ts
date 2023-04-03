@@ -6,3 +6,8 @@ export interface IEmailUpdatePassword {
   password: string;
   email: string;
 }
+
+export interface IEmailChatAdApproval {
+  email: string;
+  description: string;
+}

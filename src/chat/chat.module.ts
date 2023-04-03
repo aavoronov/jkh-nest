@@ -15,6 +15,7 @@ import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
   ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, ChatRoomsService],
+  exports: [ChatGateway],
 })
 export class ChatModule {
   configure(consumer: MiddlewareConsumer) {

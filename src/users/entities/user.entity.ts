@@ -12,6 +12,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Message } from '../../chat/entities/message.entity';
 import { EstateObjectRights } from '../../estate-objects/entities/estate-object-rights.entity';
 import { TradingPlatformFavorites } from '../../trading-platform/entities/trading-platform-favorites.entity';
+import { WorkerProfile } from './worker-profile.entity';
+import { TradingPlatformProduct } from '../../trading-platform/entities/trading-platform-product.entity';
+import { Service } from '../../services/entities/service.entity';
+import { MapObjectReview } from '../../map-objects/entities/map-object-review.entity';
+import { MapObjectReply } from '../../map-objects/entities/map-object-reply.entity';
+import { ServiceReview } from '../../services/entities/service-review';
 
 @Table
 export class User extends Model<User> {
@@ -29,6 +35,13 @@ export class User extends Model<User> {
   })
   phone: string;
 
+  // @Column({
+  //   type: DataType.ENUM,
+  //   unique: true,
+  //   allowNull: true,
+  // })
+  // sex: string;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -37,7 +50,15 @@ export class User extends Model<User> {
 
   @Column({
     defaultValue: 'user',
-    values: ['user', 'worker1', 'worker2', 'admin'],
+    values: [
+      'user',
+      'uk',
+      'upravdom',
+      'admakers',
+      'stores',
+      'business',
+      'admin',
+    ],
   })
   @ApiProperty()
   role: string;
@@ -72,4 +93,22 @@ export class User extends Model<User> {
 
   @HasMany(() => TradingPlatformFavorites)
   favorites: TradingPlatformFavorites;
+
+  @HasMany(() => TradingPlatformProduct)
+  tradingPlatformProducts: TradingPlatformProduct;
+
+  @HasMany(() => Service)
+  services: Service;
+
+  @HasMany(() => MapObjectReview)
+  mapObjectReviews: MapObjectReview;
+
+  @HasMany(() => MapObjectReply)
+  mapObjectReplies: MapObjectReply;
+
+  @HasMany(() => ServiceReview)
+  serviceReviews: ServiceReview;
+
+  @HasOne(() => WorkerProfile)
+  workerProfile: WorkerProfile;
 }
