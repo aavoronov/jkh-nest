@@ -6,6 +6,7 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+
     "allowSyntheticDefaultImports": true,
     "target": "es2017",
     "sourceRoot": "./",
@@ -22,5 +23,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "exclude": ["src/core/components"]
 }
