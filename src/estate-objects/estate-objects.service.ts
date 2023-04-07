@@ -11,6 +11,8 @@ import * as jwt from 'jsonwebtoken';
 import { Verifications } from '../verifications/entities/verification.entity';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
+import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
 
 @Injectable()
 export class EstateObjectsService {
@@ -285,5 +287,58 @@ export class EstateObjectsService {
     await this.deleteUnauthorizedChatsAccess(user.id);
 
     return { status: StatusCodes.OK, text: 'success' };
+  }
+
+  async approveWorkerObject(id: number) {
+    try {
+      // const user = await User.findOne({
+      //   where: { email: result.email },
+      //   include: [{ model: WorkerProfile }],
+      // });
+
+      const application = await NewWorkerObjectApplication.findOne({
+        where: { id: id },
+        include: [
+          {
+            model: WorkerProfile,
+            include: [{ model: User, attributes: ['email'] }],
+          },
+        ],
+      });
+
+      const email = application.worker.user.email;
+      const address = application.address;
+      const latutide = application.point.coordinates[1];
+      const longitude = application.point.coordinates[0];
+      const apartment = '-1';
+      const account = '0';
+      const isOwner = false;
+
+      console.log({
+        email,
+        address,
+        latitude: latutide,
+        longitude,
+        apartment,
+        account,
+        isOwner,
+      });
+
+      await application.destroy();
+
+      await this.createObject({
+        email,
+        address,
+        latitude: latutide,
+        longitude,
+        apartment,
+        account,
+        isOwner,
+      });
+
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

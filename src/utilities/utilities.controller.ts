@@ -9,6 +9,9 @@ import {
 } from '@nestjs/common';
 import { UtilitiesService } from './utilities.service';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('utilities')
 @Controller('utilities')
 export class UtilitiesController {
   constructor(private readonly utilitiesService: UtilitiesService) {}

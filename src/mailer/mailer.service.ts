@@ -8,22 +8,33 @@ import { HttpException } from '@nestjs/common';
 
 import { createTransport } from 'nodemailer';
 
-const user = process.env.MAILER_USER;
-const pass = process.env.MAILER_PASSWORD;
-
-const transporter = createTransport({
-  host: 'smtp.yandex.ru',
-  port: 465,
-  //   service: "mail",
-  secure: true,
-  auth: {
-    user: user + '@yandex.ru',
-    pass: pass,
-  },
-});
+// const user = process.env.MAILER_USER;
+// const pass = process.env.MAILER_PASSWORD;
 
 @Injectable()
 export class MailerService {
+  // user = process.env.MAILER_USER;
+  // pass = process.env.MAILER_PASSWORD;
+  // adminUrl = process.env.ADMIN_URL;
+  // adminEmail = process.env.ADMIN_EMAIL;
+  // mailerUrl = process.env.MAILER_URL;
+
+  user = 'voronov.xcvi';
+  pass = 'ogkluftufzovrllc';
+  mailerUrl = 'http://localhost:5000/api/v1/';
+  adminEmail = 'stinger1221@mail.ru';
+  adminUrl = 'http://localhost:5000/admin';
+
+  transporter = createTransport({
+    host: 'smtp.yandex.ru',
+    port: 465,
+    //   service: "mail",
+    secure: true,
+    auth: {
+      user: this.user + '@yandex.ru',
+      pass: this.pass,
+    },
+  });
   // async sendAccountData(body) {
   //   try {
   //     const output = `
@@ -49,16 +60,16 @@ export class MailerService {
     try {
       const output = `
            
-            <p>Аккаунт зарегистрирован. <a href="${process.env.MAILER_URL}/users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
+            <p>Аккаунт зарегистрирован. <a href="${this.mailerUrl}/users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
             
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
         to: body.email,
         subject: 'Данные нового аккаунта ЖКХ Консьерж',
         html: output,
       };
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -74,13 +85,13 @@ export class MailerService {
             <p>Рекомендуем сменить его на более надежный.</p>
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
         to: body.email,
         subject: 'Новый пароль к аккаунту',
         html: output,
       };
 
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -92,17 +103,17 @@ export class MailerService {
     try {
       const output = `
           
-      <p>Почта вашей учетной записи успешно изменена. <a href="${process.env.MAILER_URL}users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить вашу новую почту.</a></p>
+      <p>Почта вашей учетной записи успешно изменена. <a href="${this.mailerUrl}users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить вашу новую почту.</a></p>
             
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
         to: body.email,
         subject: 'Подтверждение новой почты',
         html: output,
       };
 
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -118,13 +129,13 @@ export class MailerService {
             <p>Рекомендуем сменить его на более надежный.</p>
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
         to: body.email,
         subject: 'Ваши данные учетной записи рабочего',
         html: output,
       };
 
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -136,16 +147,39 @@ export class MailerService {
     try {
       const output = `
             <p>Поступила новая заявка на регистрацию рабочего аккаунта.</p>
-            <p>Просмотреть можно по <a href='${process.env.ADMIN_URL}resources/WorkerProfiles/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
+            <p>Просмотреть можно по <a href='${this.adminUrl}resources/WorkerProfiles/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
-        to: process.env.ADMIN_EMAIL,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
+        to: this.adminEmail,
         subject: 'Новая заявка рабочего аккаунта',
         html: output,
       };
 
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async newWorkerObjectApplication(id: number) {
+    try {
+      const output = `
+            <p>Поступила новая заявка на регистрацию объекта под управлением рабочего аккаунта.</p>
+            <p>Просмотреть можно по <a href='${this.adminUrl}resources/NewWorkerObjectApplications/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
+        `;
+      const mailOptions = {
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
+        to: this.adminEmail,
+        subject: 'Новая заявка объекта рабочего аккаунта',
+        html: output,
+      };
+
+      console.log(this.user, this.pass, this.adminUrl);
+
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -157,18 +191,18 @@ export class MailerService {
     try {
       const output = `
             <p>Поступила новая заявка на рекламу в домовых чатах.</p>
-            <p>Просмотреть можно по <a href='${process.env.ADMIN_URL}resources/ChatAds/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
+            <p>Просмотреть можно по <a href='${this.adminUrl}resources/ChatAds/records/${id}/show'>ссылке</a> или найти вручную в административной панели.</p>
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
-        to: process.env.ADMIN_EMAIL,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
+        to: this.adminEmail,
         subject: 'Новая заявка на рекламу в чатах',
         html: output,
       };
 
       console.log('sent');
 
-      await transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
@@ -184,13 +218,14 @@ export class MailerService {
             <p>одобрено модератором.</p>
         `;
       const mailOptions = {
-        from: `ЖКХ Консьерж <${user}@yandex.ru>`,
+        from: `ЖКХ Консьерж <${this.user}@yandex.ru>`,
         to: body.email,
         subject: 'Одобрено объявление домового чата',
         html: output,
       };
 
-      await transporter.sendMail(mailOptions);
+      console.log(this.user, this.pass, this.adminUrl);
+      await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),

@@ -35,6 +35,10 @@ export class AccessMiddleware implements NestMiddleware {
           return next();
         case 'user':
           return next();
+        case 'uk':
+          return next();
+        case 'upravdom':
+          return next();
 
         default:
           return res.status(StatusCodes.BAD_REQUEST).send(send);

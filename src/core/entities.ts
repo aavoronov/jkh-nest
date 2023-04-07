@@ -28,6 +28,12 @@ import { Account } from '../utilities/entities/account.entity';
 import { Verifications } from '../verifications/entities/verification.entity';
 import { ChatAdService } from '../chat-ad/chat-ad.service';
 import { TransactionsService } from '../transactions/transactions.service';
+import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
+import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
+import { EstateObjectsService } from '../estate-objects/estate-objects.service';
+import { Poll } from '../polls/entities/poll.entity';
+import { PollOption } from '../polls/entities/poll-options.entity';
+import { PollReply } from '../polls/entities/poll-reply.entity';
 
 export const entities = [
   User,
@@ -56,6 +62,10 @@ export const entities = [
   Transaction,
   ChatAd,
   GenericData,
+  NewWorkerObjectApplication,
+  Poll,
+  PollOption,
+  PollReply,
 ];
 
 export const componentLoader = new ComponentLoader();
@@ -178,6 +188,11 @@ const approveWorker = async (id: number) => {
 const approveChatAd = async (id: number) => {
   const chatAdService = new ChatAdService(new TransactionsService());
   await chatAdService.approveChatAd(id);
+};
+
+const approveWorkerObjectApplication = async (id: number) => {
+  const estateObjectsService = new EstateObjectsService();
+  await estateObjectsService.approveWorkerObject(id);
 };
 
 const deleteMapObjectWithItsDetails = async (id: number) => {
@@ -392,6 +407,28 @@ const ChatAdResource = {
   },
 };
 
+const NewWorkerObjectApplicationResource = {
+  resource: NewWorkerObjectApplication,
+  options: {
+    componentLoader,
+    actions: {
+      approve: {
+        actionType: 'record',
+        component: false,
+        handler: async (request, response, context) => {
+          const { record, currentAdmin } = context;
+          console.log('record', record);
+          await approveWorkerObjectApplication(record.params.id);
+          return {
+            record: record.toJSON(currentAdmin),
+            msg: 'Hello world',
+          };
+        },
+      },
+    },
+  },
+};
+
 export const resources = [
   UserResource,
   ProfileResource,
@@ -419,4 +456,8 @@ export const resources = [
   Transaction,
   ChatAdResource,
   GenericData,
+  NewWorkerObjectApplicationResource,
+  Poll,
+  PollOption,
+  PollReply,
 ];

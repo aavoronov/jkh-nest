@@ -16,6 +16,7 @@ import { EstateObjectRights } from '../../estate-objects/entities/estate-object-
 import { TradingPlatformFavorites } from '../../trading-platform/entities/trading-platform-favorites.entity';
 import { User } from './user.entity';
 import { Account } from '../../utilities/entities/account.entity';
+import { NewWorkerObjectApplication } from '../../chat-rooms/entities/worker-object-application.entity';
 
 @Table
 export class WorkerProfile extends Model<WorkerProfile> {
@@ -91,4 +92,7 @@ export class WorkerProfile extends Model<WorkerProfile> {
 
   @HasMany(() => Account)
   accounts: Account;
+
+  @HasMany(() => NewWorkerObjectApplication)
+  objectApplications: NewWorkerObjectApplication;
 }

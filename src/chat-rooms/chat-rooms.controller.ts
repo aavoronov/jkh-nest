@@ -12,6 +12,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { ChatRoomsService } from './chat-rooms.service';
 import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
+import { RegisterWorkerObjectDto } from './dto/register-worker-object.dto';
 
 @ApiTags('chat-rooms')
 @Controller('chat-rooms')
@@ -31,6 +32,17 @@ export class ChatRoomsController {
   @Post('sign-up')
   signUp(@Body() signUpToRoomDto: SignUpToRoomDto) {
     return this.chatRoomsService.signUp(signUpToRoomDto);
+  }
+
+  @Post('worker-object')
+  registerWorkerObject(
+    @Req() req: any,
+    @Body() registerWorkerObjectDto: RegisterWorkerObjectDto,
+  ) {
+    return this.chatRoomsService.registerWorkerObject(
+      req,
+      registerWorkerObjectDto,
+    );
   }
 
   @Delete('sign-up')

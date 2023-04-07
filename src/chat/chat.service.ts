@@ -75,7 +75,7 @@ export class ChatService {
         include: [
           {
             model: User,
-            attributes: ['id'],
+            attributes: ['id', 'role'],
             include: [
               {
                 model: Profile,
@@ -153,7 +153,7 @@ export class ChatService {
         include: [
           {
             model: User,
-            attributes: ['id'],
+            attributes: ['id', 'role'],
             include: [
               {
                 model: Profile,
@@ -241,7 +241,7 @@ export class ChatService {
         include: [
           {
             model: User,
-            attributes: ['id'],
+            attributes: ['id', 'role'],
             include: [
               {
                 model: Profile,
@@ -297,7 +297,7 @@ export class ChatService {
         include: [
           {
             model: User,
-            attributes: ['id'],
+            attributes: ['id', 'role'],
             include: [
               {
                 model: Profile,

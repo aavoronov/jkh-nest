@@ -48,6 +48,7 @@ const modules = [
   TasksModule,
   TransactionsModule,
   GenericDataModule,
+  ChatAdModule,
 ];
 
 @Module({
@@ -64,17 +65,16 @@ const modules = [
         auth: {
           authenticate,
           cookieName: 'adminjs',
-          cookiePassword: 'secret',
+          cookiePassword: 'secretwhatwouldthatbe',
         },
         sessionOptions: {
           resave: true,
           saveUninitialized: true,
-          secret: 'secret',
+          secret: 'secretwhatever',
         },
       }),
     }),
     ScheduleModule.forRoot(),
-    ChatAdModule,
   ],
   controllers: [AppController],
   providers: [AppService],

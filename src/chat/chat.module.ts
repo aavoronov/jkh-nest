@@ -6,12 +6,14 @@ import { MulterModule } from '@nestjs/platform-express';
 import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
+import { ChatRoomsModule } from '../chat-rooms/chat-rooms.module';
 
 @Module({
   imports: [
     MulterModule.register({
       dest: './uploads',
     }),
+    ChatRoomsModule,
   ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, ChatRoomsService],

@@ -16,6 +16,9 @@ import { CreateTradingPlatformProductDto } from './dto/create-trading-platform-p
 import { UpdateTradingPlatformProductDto } from './dto/update-trading-platform-product.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('trading-platform')
 @Controller('trading-platform')
 export class TradingPlatformController {
   constructor(

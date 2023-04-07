@@ -16,7 +16,9 @@ import { ChatAdService } from './chat-ad.service';
 import { CreateChatAdDto } from './dto/create-chat-ad.dto';
 import { UpdateChatAdDto } from './dto/update-chat-ad.dto';
 import { PayForChatAdDto } from './dto/pay-for-chat-ad-dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('chat-ads')
 @Controller('chat-ads')
 export class ChatAdController {
   constructor(private readonly chatAdService: ChatAdService) {}

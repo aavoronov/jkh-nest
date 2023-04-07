@@ -21,6 +21,9 @@ import {
 } from '@nestjs/platform-express';
 import { CreateReviewDto } from './dto/create-review.dto';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('services')
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}

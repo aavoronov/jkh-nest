@@ -14,6 +14,7 @@ import {
   IEmailChatAdApproval,
   IEmailUpdatePassword,
 } from '../mailer/interfaces/email.body';
+import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
 
 const mailerService = new MailerService();
 

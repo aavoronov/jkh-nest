@@ -12,6 +12,9 @@ import { EstateObjectsService } from './estate-objects.service';
 import { CreateEstateObjectDto } from './dto/create-estate-object.dto';
 import { UpdateEstateObjectDto } from './dto/update-estate-object.dto';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('estate-objects')
 @Controller('estate-objects')
 export class EstateObjectsController {
   constructor(private readonly estateObjectsService: EstateObjectsService) {}

@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import {
@@ -13,6 +15,9 @@ import {
   TransactionTypes,
 } from './dto/create-transaction.dto';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('transactions')
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
@@ -22,10 +27,10 @@ export class TransactionsController {
     return this.transactionsService.createTransaction(createTransactionDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.transactionsService.findAll();
-  // }
+  @Get()
+  getMyTransactions(@Req() req: any, @Query('page') page: number) {
+    return this.transactionsService.getMyTransactions(req, page);
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

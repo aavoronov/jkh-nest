@@ -12,44 +12,55 @@ import * as jwt from 'jsonwebtoken';
 import { Verifications } from '../verifications/entities/verification.entity';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
 import { GenericData } from '../generic-data/entities/generic-data.entity';
+import { RegisterWorkerObjectDto } from './dto/register-worker-object.dto';
+import { NewWorkerObjectApplication } from './entities/worker-object-application.entity';
+import { MailerService } from '../mailer/mailer.service';
+import { EstateObjectsService } from '../estate-objects/estate-objects.service';
+
+const mailer = new MailerService();
 
 @Injectable()
 export class ChatRoomsService {
-  async getRooms(req) {
-    const token = req.headers.authorization;
-    const result = jwt.verify(token, process.env.JWT);
-    const user = await User.findOne({
-      where: { email: result.email },
-      include: [{ model: Verifications }],
-    });
+  async getRooms(req: any) {
+    try {
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+      });
 
-    const chatRooms = await ChatRoom.findAll({
-      // where: {
-      //   '$EstateObject.EstateObjectRight.userId$': { [Op.eq]: user.id },
-      // },
-      include: [
-        {
-          model: EstateObject,
-          required: true,
-          attributes: ['id'],
-          include: [
-            {
-              model: EstateObjectRights,
-              where: { userId: user.id },
-              required: true,
-              attributes: ['id'],
-            },
-          ],
-        },
-      ],
-    });
+      // console.log('user', user);
 
-    const roomsAvailable = chatRooms.map((item) => item.id);
+      const chatRooms = await ChatRoom.findAll({
+        // where: {
+        //   '$EstateObject.EstateObjectRight.userId$': { [Op.eq]: user.id },
+        // },
+        include: [
+          {
+            model: EstateObject,
+            required: true,
+            attributes: ['id'],
+            include: [
+              {
+                model: EstateObjectRights,
+                where: { userId: user.id },
+                required: true,
+                attributes: ['id'],
+              },
+            ],
+          },
+        ],
+      });
 
-    console.log(roomsAvailable);
+      const roomsAvailable = chatRooms.map((item) => item.id);
 
-    const rooms = await ChatRoom.findAll({ where: { id: roomsAvailable } });
-    return rooms;
+      console.log(roomsAvailable);
+
+      const rooms = await ChatRoom.findAll({ where: { id: roomsAvailable } });
+      return rooms;
+    } catch (e) {
+      console.log('e', e);
+    }
   }
 
   async signUp(signUpToRoomDto: SignUpToRoomDto) {
@@ -160,6 +171,10 @@ export class ChatRoomsService {
               {
                 model: Profile,
                 attributes: ['pseudonym', 'color', 'profilePic'],
+              },
+              {
+                model: WorkerProfile,
+                attributes: ['name', 'color', 'profilePic'],
               },
             ],
           },
@@ -372,4 +387,54 @@ export class ChatRoomsService {
       console.log(e);
     }
   }
+
+  async registerWorkerObject(
+    req: any,
+    registerWorkerObjectDto: RegisterWorkerObjectDto,
+  ): Promise<void> {
+    try {
+      const { address, longitude, latitude } = registerWorkerObjectDto;
+      console.log(registerWorkerObjectDto);
+
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+        include: [{ model: WorkerProfile }],
+      });
+
+      const existingRecord = await NewWorkerObjectApplication.findOne({
+        where: { workerId: user.workerProfile.id, address: address },
+      });
+
+      if (!!existingRecord) {
+        throw new HttpException(
+          'Вы уже зарегистрировали этот объект. Ожидайте одобрения',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('some error'),
+          },
+        );
+      }
+
+      const record = await NewWorkerObjectApplication.create({
+        workerId: user.workerProfile.id,
+        address: address,
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+      });
+
+      await mailer.newWorkerObjectApplication(record.id);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 }
+
+// await EstateObject.create({
+//   address: address,
+//   apartment: apartment,
+//   // account: account,
+//   roomId: chatRoom.id,
+//   point: { type: 'Point', coordinates: [longitude, latitude] },
+//   //flipped
+// })

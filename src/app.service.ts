@@ -6,6 +6,8 @@ import * as Color from 'color';
 export class AppService {
   getHello(): string {
     // return 'Hello World!';
+    const user = process.env.MAILER_USER;
+    console.log(user);
     const getRandomInt = (max: number): number => {
       return Math.floor(Math.random() * max);
     };
