@@ -68,8 +68,11 @@ export class ServicesController {
     @Query('withAccommodation') withAccommodation: string | undefined,
     @Query('withoutAccommodation') withoutAccommodation: string | undefined,
     @Query('category') category: string | undefined,
+    @Query('searchQuery') searchQuery: string | undefined,
+    @Query('radius') radius: number | undefined,
+    @Query('longitude') longitude: number | undefined,
+    @Query('latitude') latitude: number | undefined,
 
-    // @Query('searchQuery') searchQuery: string | undefined,
     // @Query('location') location: string | undefined,
   ) {
     return this.servicesService.getServices(
@@ -84,7 +87,11 @@ export class ServicesController {
       withAccommodation,
       withoutAccommodation,
       category,
-      // searchQuery, location
+      searchQuery,
+      radius,
+      longitude,
+      latitude,
+      // location
     );
   }
 

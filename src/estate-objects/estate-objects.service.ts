@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateEstateObjectDto } from './dto/create-estate-object.dto';
@@ -13,6 +13,7 @@ import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
 import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { Message } from '../chat/entities/message.entity';
 
 @Injectable()
 export class EstateObjectsService {
@@ -168,6 +169,117 @@ export class EstateObjectsService {
     // console.log(objects);
     return objects;
   }
+
+  async getObjectsWithNotifications(req: any) {
+    const token = req.headers.authorization;
+    const result = jwt.verify(token, process.env.JWT);
+    const user = await User.findOne({
+      where: { email: result.email },
+    });
+
+    const objects = await EstateObjectRights.findAll({
+      include: [
+        {
+          model: EstateObject,
+          as: 'estateObject',
+          include: [
+            {
+              model: ChatRoom,
+              as: 'chat',
+              attributes: [
+                'id',
+                // [
+                //   Sequelize.fn(
+                //     'COUNT',
+                //     Sequelize.col('estateObject.chat.messages.id'),
+                //   ),
+                //   'count',
+                // ],
+              ],
+              include: [
+                {
+                  model: RoomAccess,
+                  as: 'accesses',
+                  attributes: ['updatedAt'],
+                  where: { userId: user.id },
+                  required: true,
+                },
+                {
+                  model: Message,
+                  as: 'messages',
+                  attributes: ['id'],
+                  required: false,
+                  where: {
+                    updatedAt: {
+                      [Op.gte]: Sequelize.col(
+                        'estateObject.chat.accesses.updatedAt',
+                      ),
+                    },
+                  },
+                  include: [{ model: User, attributes: ['role'] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      group: [
+        'EstateObjectRights.id',
+        'estateObject.id',
+        'estateObject.chat.id',
+        'estateObject.chat.accesses.id',
+        'estateObject.chat.messages.id',
+        'estateObject.chat.messages.user.id',
+      ],
+      where: { userId: user.id },
+    });
+
+    // console.log(objects);
+    return objects;
+  }
+
+  // async getMessagesNumber(req: any): Promise<IRequestMessage> {
+  //   async function getMessagesPerRoom(room: any) {
+  //     const perRoom = await Message.count({
+  //       where: {
+  //         updatedAt: { [Op.gte]: room.updatedAt as Date },
+  //         roomId: room.roomId,
+  //       },
+  //     });
+  //     return { room: room.roomId, amount: perRoom };
+  //   }
+
+  //   const token = req.headers.authorization;
+  //   const result = jwt.verify(token, process.env.JWT);
+
+  //   try {
+  //     const access = await RoomAccess.findAll({
+  //       include: [
+  //         { model: User, where: { email: result.email }, attributes: ['id'] },
+  //       ],
+  //     });
+
+  //     const rooms = access.map((item) => {
+  //       return { roomId: item.roomId, updatedAt: item.updatedAt };
+  //     });
+
+  //     console.log(rooms);
+
+  //     const results = await async.map(rooms, getMessagesPerRoom);
+
+  //     console.log(results);
+
+  //     return {
+  //       status: StatusCodes.OK,
+  //       message: 'Ok',
+  //       data: results,
+  //       // data: msgs,
+  //     };
+  //   } catch (e) {
+  //     console.log(e);
+  //     return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
+  //   }
+  // }
 
   async deleteObject(req: any, id: number) {
     const token = req.headers.authorization;

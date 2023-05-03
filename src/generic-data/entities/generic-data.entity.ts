@@ -10,7 +10,7 @@ export class GenericData extends Model<GenericData> {
   key: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: true,
   })
   value: any;

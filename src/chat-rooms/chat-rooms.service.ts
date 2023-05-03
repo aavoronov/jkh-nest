@@ -139,12 +139,15 @@ export class ChatRoomsService {
     }
   }
 
-  async getMy(email: string) {
+  async getMy(req: any) {
     try {
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
-        where: { email: email },
+        where: { email: result.email },
         attributes: ['id'],
       });
+
       const chats = await RoomAccess.findAll({
         where: { userId: user.id },
         include: [{ model: ChatRoom, as: 'chat' }],

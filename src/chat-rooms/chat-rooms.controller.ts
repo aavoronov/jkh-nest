@@ -24,9 +24,9 @@ export class ChatRoomsController {
     return this.chatRoomsService.getRooms(req);
   }
 
-  @Get('my/:email')
-  getMy(@Param('email') email: string) {
-    return this.chatRoomsService.getMy(email);
+  @Get('my')
+  getMy(@Req() req: any) {
+    return this.chatRoomsService.getMy(req);
   }
 
   @Post('sign-up')

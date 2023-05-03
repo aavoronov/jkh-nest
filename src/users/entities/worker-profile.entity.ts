@@ -66,11 +66,11 @@ export class WorkerProfile extends Model<WorkerProfile> {
   })
   balance: number;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  riasToken: string;
+  // @Column({
+  //   type: DataType.STRING,
+  //   allowNull: true,
+  // })
+  // riasToken: string;
 
   @Column({
     type: DataType.STRING,

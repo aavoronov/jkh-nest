@@ -97,7 +97,7 @@ export class PollsService {
 
       const polls = await Poll.findAll({
         where: { workerId: user.id },
-        attributes: ['isMultipleChoice', 'question'],
+        attributes: ['isMultipleChoice', 'question', 'createdAt'],
         include: [
           {
             model: PollOption,
@@ -171,7 +171,7 @@ export class PollsService {
 
       const polls = await Poll.findAll({
         where: whereStatement,
-        attributes: ['isMultipleChoice', 'question', 'id'],
+        attributes: ['isMultipleChoice', 'question', 'id', 'createdAt'],
         include: [
           {
             model: PollOption,

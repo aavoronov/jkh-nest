@@ -28,8 +28,8 @@ export class Account extends Model<Account> {
 
   @ApiProperty()
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING,
     allowNull: false,
   })
-  accountNumber: number;
+  accountNumber: string;
 }

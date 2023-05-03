@@ -13,7 +13,10 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+  CreateUserByPhoneDto,
+  CreateUserByEmailDto,
+} from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { ApiTags, ApiExcludeEndpoint } from '@nestjs/swagger';
@@ -34,8 +37,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  signUp(@Body() user: CreateUserByEmailDto) {
+    return this.usersService.signUp(user);
   }
 
   @Post('worker')
@@ -47,7 +50,6 @@ export class UsersController {
     ]),
   )
   // uploadFile(@UploadedFiles() files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] }) {
-  // console.log(files);
   createWorkerApplication(
     @Body() createWorkerProfileDto: CreateWorkerProfileDto,
     @UploadedFiles()
@@ -57,6 +59,8 @@ export class UsersController {
       snils: Express.Multer.File;
     },
   ) {
+    console.log(files);
+    console.log('createWorkerProfileDto', createWorkerProfileDto);
     return this.usersService.createWorkerApplication(
       createWorkerProfileDto,
       files,
@@ -72,6 +76,16 @@ export class UsersController {
   @Post('auth')
   authorizeByEmail(@Body() userData: UserDto) {
     return this.usersService.authorizeByEmail(userData);
+  }
+
+  @Post('phone/verification')
+  createPhoneVerification(@Body() body: { phone: string }) {
+    return this.usersService.createPhoneVerification(body);
+  }
+
+  @Post('phone/sign-in')
+  authorizeByPhone(@Body() body: { phone: string; otp: string }) {
+    return this.usersService.authorizeByPhone(body);
   }
 
   @Get('confirm')
@@ -120,6 +134,14 @@ export class UsersController {
   @Post('updateEmail')
   updateEmail(@Req() req: any, @Body() updateData: UpdateEmailDto) {
     return this.usersService.updateEmail(req, updateData);
+  }
+
+  @Post('updatePhone')
+  updatePhone(
+    @Req() req: any,
+    @Body() updateData: { phone: string; password: string },
+  ) {
+    return this.usersService.updatePhone(req, updateData);
   }
 
   @Get('profile')

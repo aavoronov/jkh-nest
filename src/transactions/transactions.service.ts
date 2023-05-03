@@ -1,6 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
+import {
+  CreateTransactionDto,
+  TransactionTypes,
+} from './dto/create-transaction.dto';
 
 import { Transaction } from './entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
@@ -50,7 +53,33 @@ export class TransactionsService {
         cause: new Error('some error'),
       });
     }
-    return `This action returns all transactions`;
+  }
+
+  async getMyExpenses(req: any) {
+    try {
+      const token = req.headers.authorization;
+      const result = jwt.verify(token, process.env.JWT);
+      const user = await User.findOne({
+        where: { email: result.email },
+      });
+
+      const transactions = await Transaction.findAll({
+        where: { userId: user.id, basis: [TransactionTypes.chatAd] },
+        attributes: ['sum'],
+        order: [['id', 'DESC']],
+      });
+
+      let sum = 0;
+      transactions.forEach((item) => (sum += item.sum));
+      console.log('sum', sum);
+
+      return sum;
+    } catch (e) {
+      console.log('e', e);
+      throw new HttpException('Ошибка', StatusCodes.BAD_REQUEST, {
+        cause: new Error('some error'),
+      });
+    }
   }
 
   // findOne(id: number) {

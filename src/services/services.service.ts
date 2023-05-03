@@ -9,11 +9,12 @@ import { Service } from './entities/service.entity';
 import * as jwt from 'jsonwebtoken';
 import { User } from '../users/entities/user.entity';
 import { StatusCodes } from 'http-status-codes';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Verifications } from '../verifications/entities/verification.entity';
 import { ServiceReview } from './entities/service-review';
 import { Profile } from '../users/entities/profile.entity';
+import { Literal } from 'sequelize/types/utils';
 
 @Injectable()
 export class ServicesService {
@@ -77,7 +78,11 @@ export class ServicesService {
 
       const {
         subcategory,
+        longitude,
+        latitude,
         address,
+        name,
+        isOrg,
         brigade,
         contract,
         accommodation,
@@ -91,17 +96,22 @@ export class ServicesService {
 
       const mainImage = await this.uploadFiles(files.mainImage);
       const passport = await this.uploadFiles(files.passport);
-      const portfolio = await this.uploadFiles(files.portfolio);
+      const portfolio = !!files.portfolio
+        ? await this.uploadFiles(files.portfolio)
+        : [];
 
       // const cat =
       // const subcat = await ServiceSubcategory.findOne({ where: { subcategory } });
       const service = await Service.create({
         subcategoryId: +subcategory,
-        experience: 'test',
+        experience: '',
         mainImage: mainImage[0],
         portfolio,
         passport,
         address,
+        name,
+        point: { type: 'Point', coordinates: [longitude, latitude] },
+        isOrg,
         brigade,
         contract,
         accommodation,
@@ -137,23 +147,27 @@ export class ServicesService {
     withAccommodation: string | undefined,
     withoutAccommodation: string | undefined,
     category: string | undefined,
+    searchQuery: string | undefined,
+    radius: number | undefined,
+    longitude: number | undefined,
+    latitude: number | undefined,
 
-    // searchQuery: string | undefined,
     // location: string | undefined,
   ) {
-    // interface whereStatement {
-    //   name: string;
-    //   isChecked: boolean | undefined;
-    //   contract: boolean | undefined;
-    //   warranty: boolean | undefined;
-    //   accommodation: boolean | undefined;
-    //   portfolio:
-    //   price: string;
-    //   images;
-    //   description;
-    //   condition;
-    //   subcategoryId: number | undefined;
-    //   wts;
+    // interface IWhereStatement {
+    //   [Op.or]?:
+    //     | {
+    //         name: { [Op.iLike]: string };
+    //         description: { [Op.iLike]: string };
+    //       }
+    //     | undefined;
+    //   portfolio?: { [Op.ne]: null } | undefined;
+    //   isChecked?: true | undefined;
+    //   contract?: true | undefined;
+    //   warranty?: true | undefined;
+    //   accommodation?: boolean | undefined;
+    //   isOrg?: boolean | undefined;
+    //   subcategoryId?: number[] | undefined;
     // }
     try {
       const token = req.headers.authorization;
@@ -165,38 +179,51 @@ export class ServicesService {
       const offset = page * limit - limit;
 
       const whereStatement: any = {};
-
-      //   contract: string | undefined,
-      // isChecked: string | undefined,
-      // withPortfolio: string | undefined,
-      // privatePerson: string | undefined,
-      // organization: string | undefined,
-      // withAccommodation: string | undefined,
-      // withoutAccommodation: string | undefined,
-      // category: string | undefined,
+      let radiusQuery: Literal | true = true;
 
       if (warranty !== void 0) whereStatement.warranty = true;
       if (isChecked !== void 0) whereStatement.isChecked = true;
+      if (contract !== void 0) whereStatement.contract = true;
       if (withPortfolio !== void 0)
         whereStatement.portfolio = { [Op.ne]: null };
-      // if (privatePerson !== void 0) whereStatement.warranty = true;
-      // if (organization !== void 0) whereStatement.warranty = true;
+      if (privatePerson) whereStatement.isOrg = false;
+      if (organization) whereStatement.isOrg = true;
       if (withAccommodation !== void 0) whereStatement.accommodation = true;
       if (withoutAccommodation !== void 0) whereStatement.accommodation = false;
-      if (warranty !== void 0) whereStatement.warranty = true;
       if (category) {
         const subcategories = await ServiceSubcategory.findAll({
           where: { categoryId: category },
         });
-        const subcategoriesIndices = subcategories.map((item) => item.id);
+        const subcategoriesIndices: number[] = subcategories.map(
+          (item) => item.id,
+        );
         whereStatement.subcategoryId = subcategoriesIndices;
       }
-      // if (searchQuery) whereStatement.name = { [Op.iLike]: `%${searchQuery}%` };
+      if (!!searchQuery) {
+        whereStatement[Op.or] = {
+          name: { [Op.iLike]: `%${searchQuery}%` },
+          description: { [Op.iLike]: `%${searchQuery}%` },
+        };
+      }
+
+      if (!!radius) {
+        radiusQuery = Sequelize.literal(
+          `ST_DistanceSphere(ST_MakePoint(${longitude}, ${latitude}), "point") < ${radius}`,
+        );
+      }
+
+      //radius
+
+      console.log('whereStatement', whereStatement);
 
       const services = await Service.findAll({
-        where: whereStatement,
+        // where: whereStatement,
+        where: {
+          [Op.and]: [whereStatement, radiusQuery],
+        },
         attributes: [
           'id',
+          'name',
           'address',
           'contract',
           'description',
@@ -204,7 +231,12 @@ export class ServicesService {
           'portfolio',
           'mainImage',
           'isChecked',
-          'contract',
+          // [
+          //   Sequelize.literal(
+          //     `ST_DistanceSphere(ST_MakePoint(${longitude}, ${latitude}), "point")`,
+          //   ),
+          //   'distance',
+          // ],
         ],
 
         order: [['id', 'DESC']],
@@ -217,11 +249,19 @@ export class ServicesService {
             attributes: ['rating'],
             // where: { isApproved: true },
           },
+          {
+            model: User,
+            attributes: ['phone'],
+            // where: { isApproved: true },
+          },
+          { model: ServiceSubcategory, include: [{ model: ServiceCategory }] },
         ],
       });
 
       const count = await Service.count({
-        where: whereStatement,
+        where: {
+          [Op.and]: [whereStatement, radiusQuery],
+        },
       });
 
       console.log(count);
@@ -301,7 +341,18 @@ export class ServicesService {
           'createdAt',
           'userId',
           'subcategoryId',
-          //'name',
+          'name',
+        ],
+        include: [
+          {
+            model: ServiceSubcategory,
+            attributes: ['subcategory'],
+            include: [{ model: ServiceCategory, attributes: ['category'] }],
+          },
+          {
+            model: User,
+            attributes: ['phone'],
+          },
         ],
       });
 
@@ -364,7 +415,7 @@ export class ServicesService {
 
   async getMyServices(req: any, page: number) {
     try {
-      const limit = 18;
+      const limit = 10;
 
       const offset = page * limit - limit;
 
@@ -380,6 +431,7 @@ export class ServicesService {
         where: { userId: user.id },
         attributes: [
           'id',
+          'name',
           'address',
           'contract',
           'description',

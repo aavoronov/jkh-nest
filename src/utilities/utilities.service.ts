@@ -64,7 +64,7 @@ export class UtilitiesService {
     }
     const account = await Account.findOne({
       where: { accountNumber: acct },
-      include: [{ model: WorkerProfile, attributes: ['riasToken'] }],
+      // include: [{ model: WorkerProfile, attributes: ['riasToken'] }],
     });
     console.log(account);
     if (!account) {
@@ -80,13 +80,18 @@ export class UtilitiesService {
       );
     }
     console.log(account.toJSON());
-    console.log(account.worker.riasToken);
+    // console.log(account.worker.riasToken);
 
     // &fields=id,number
     const currentDate = new Date();
 
     const res = await fetch(
-      `${process.env.RIAS_URL}payment-documents?access-token=${account.worker.riasToken}&accountId=${account.accountId}&year=2019&month=10`,
+      `${process.env.RIAS_URL}payment-documents?access-token=${
+        process.env.RIAS_TOKEN
+      }&accountId=${
+        account.accountId
+      }&year=${currentDate.getFullYear()}&month=${currentDate.getMonth()}`,
+      // &year=2019&month=10`,
       // }&year=${currentDate.getFullYear()}&month=${currentDate.getMonth()}`,
     );
 

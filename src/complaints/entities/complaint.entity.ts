@@ -33,7 +33,7 @@ export class Complaint extends Model<Complaint> {
 
   @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: true,
   })
   text: string;
@@ -53,10 +53,10 @@ export class Complaint extends Model<Complaint> {
       'map object',
       'map review',
       'map reply',
-      'trading platform',
+      // 'trading platform',
       'service',
       'service review',
-      'chat message',
+      // 'chat message',
       'poll',
     ],
   })

@@ -55,7 +55,7 @@ export class TradingPlatformProduct extends Model<TradingPlatformProduct> {
 
   @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: false,
   })
   description: string;

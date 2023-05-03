@@ -27,19 +27,19 @@ import { Base64 } from 'js-base64';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Get(':email')
-  getMessages(@Req() req, @Param('email') email: string) {
-    return this.chatService.getMessages(req, email);
+  @Get()
+  getMessages(@Req() req) {
+    console.log('fired');
+    return this.chatService.getMessages(req);
   }
 
-  @Get('more/:email')
+  @Get('more')
   getMoreMessages(
-    @Req() req,
-    @Param('email') email: string,
+    @Req() req: any,
     @Query('page') page: number,
     @Query('chat') chat: string,
   ) {
-    return this.chatService.getMoreMessages(req, email, page, chat);
+    return this.chatService.getMoreMessages(req, page, chat);
   }
 
   @Post()
@@ -66,28 +66,26 @@ export class ChatController {
     }),
   )
   createMessage(@Body() payload: any) {
-    console.log(payload._parts);
     return this.chatService.createMessage(payload);
   }
 
-  @Get('search/:email')
+  @Get('search')
   getSearchMessages(
-    @Param('email') email: string,
+    @Req() req: any,
     @Query('query') query: string,
     @Query('chat') chat: string,
   ) {
-    console.log(query);
-    return this.chatService.getSearchMessages(email, query, chat);
+    return this.chatService.getSearchMessages(req, query, chat);
   }
 
-  @Get('calendar/:email')
+  @Get('calendar')
   getCalendarMessages(
-    @Param('email') email: string,
+    @Req() req: any,
     @Query('date') date: string,
     @Query('chat') chat: string,
   ) {
     console.log(date);
-    return this.chatService.getCalendarMessages(email, date, chat);
+    return this.chatService.getCalendarMessages(req, date, chat);
   }
 
   // @Post('uploads')
@@ -96,20 +94,15 @@ export class ChatController {
   //   return this.chatService.uploadFile(file);
   // }
 
-  @Get('notifications/:email')
-  getMessagesNumber(@Param('email') email: string) {
-    return this.chatService.getMessagesNumber(email);
+  @Get('notifications')
+  getMessagesNumber(@Req() req: any) {
+    return this.chatService.getMessagesNumber(req);
   }
 
-  @Get('since/:email')
-  getMessagesSince(@Param('email') email: string) {
-    return this.chatService.getMessagesSince(email);
-  }
-
-  @Get('uploads/:name')
-  seeUploadedFile(@Param('name') image: string, @Res() res: any) {
-    return this.chatService.getFile(image, res);
-  }
+  // @Get('uploads/:name')
+  // seeUploadedFile(@Param('name') image: string, @Res() res: any) {
+  //   return this.chatService.getFile(image, res);
+  // }
 
   // @Get(':imgpath')
   // seeUploadedFile(@Param('imgpath') image, @Res() res) {

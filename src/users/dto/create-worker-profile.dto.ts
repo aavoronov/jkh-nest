@@ -13,8 +13,8 @@ export class CreateWorkerProfileDto {
   @ApiProperty({ required: true })
   readonly type: string;
 
-  @ApiProperty({ required: false })
-  readonly riasToken: string;
+  // @ApiProperty({ required: false })
+  // readonly riasToken: string;
 
   @ApiProperty({ required: true })
   readonly latitude: string;

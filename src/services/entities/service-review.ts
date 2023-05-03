@@ -19,7 +19,7 @@ export class ServiceReview extends Model<ServiceReview> {
   rating: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
   })
   text: string;
 

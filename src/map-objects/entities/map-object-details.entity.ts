@@ -12,12 +12,12 @@ import { MapObject } from './map-object.entity';
 @Table
 export class MapObjectDetails extends Model<MapObjectDetails> {
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
   })
   name: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: true,
   })
   description: string;

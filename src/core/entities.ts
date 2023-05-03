@@ -34,11 +34,13 @@ import { EstateObjectsService } from '../estate-objects/estate-objects.service';
 import { Poll } from '../polls/entities/poll.entity';
 import { PollOption } from '../polls/entities/poll-options.entity';
 import { PollReply } from '../polls/entities/poll-reply.entity';
+import { PhoneVerifications } from '../verifications/entities/phone-verification.entity';
 
 export const entities = [
   User,
   Profile,
   Verifications,
+  PhoneVerifications,
   Message,
   ChatRoom,
   RoomAccess,
@@ -433,6 +435,7 @@ export const resources = [
   UserResource,
   ProfileResource,
   Verifications,
+  PhoneVerifications,
   Message,
   ChatRoom,
   RoomAccess,

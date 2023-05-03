@@ -13,7 +13,7 @@ import { User } from '../../users/entities/user.entity';
 @Table
 export class Message extends Model<Message> {
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: false,
   })
   message: string;

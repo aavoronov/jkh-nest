@@ -20,7 +20,7 @@ export class MapObjectReview extends Model<MapObjectReview> {
   rating: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
   })
   text: string;
 

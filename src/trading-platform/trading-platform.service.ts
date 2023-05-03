@@ -21,6 +21,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionTypes } from '../transactions/dto/create-transaction.dto';
 import { Transaction } from '../transactions/entities/transaction.entity';
+import { Profile } from '../users/entities/profile.entity';
 
 @Injectable()
 export class TradingPlatformService {
@@ -219,6 +220,7 @@ export class TradingPlatformService {
     // }
     try {
       console.log(condition);
+      console.log('subcategoryId', subcategoryId);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -231,7 +233,6 @@ export class TradingPlatformService {
       const whereStatement: any = {};
       if (parseInt(wimgsonly)) whereStatement.images = { [Op.ne]: null };
       if (wts !== void 0) whereStatement.wts = wts;
-      if (subcategoryId) whereStatement.subcategoryId = subcategoryId;
       if (condition) whereStatement.condition = condition.split(',');
       if (pmin) whereStatement.price = { [Op.gte]: pmin };
       if (pmax) whereStatement.price = { [Op.lte]: pmax };
@@ -246,6 +247,9 @@ export class TradingPlatformService {
         const subcategoriesIndices = subcategories.map((item) => item.id);
         whereStatement.subcategoryId = subcategoriesIndices;
       }
+      if (subcategoryId) whereStatement.subcategoryId = subcategoryId;
+
+      console.log('whereStatement', whereStatement);
 
       const products = await TradingPlatformProduct.findAll({
         where: whereStatement,
@@ -265,13 +269,15 @@ export class TradingPlatformService {
             'ispaid',
           ],
         ],
-        include: {
-          model: TradingPlatformFavorites,
-          as: 'favorites',
-          // attributes: ['id'],
-          where: { userId: user.id },
-          required: false,
-        },
+        include: [
+          {
+            model: TradingPlatformFavorites,
+            as: 'favorites',
+            // attributes: ['id'],
+            where: { userId: user.id },
+            required: false,
+          },
+        ],
         order: [
           [Sequelize.literal('isPaid'), 'DESC'],
           ['id', 'DESC'],
@@ -493,6 +499,13 @@ export class TradingPlatformService {
             //
             //   as: 'category',
             // },
+          },
+          {
+            model: User,
+            attributes: ['id'],
+            include: [
+              { model: Profile, attributes: ['pseudonym', 'createdAt'] },
+            ],
           },
         ],
       });

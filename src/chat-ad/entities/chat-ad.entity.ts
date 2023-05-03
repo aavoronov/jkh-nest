@@ -33,7 +33,7 @@ export class ChatAd extends Model<ChatAd> {
 
   @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     unique: false,
     allowNull: false,
   })

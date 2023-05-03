@@ -17,6 +17,7 @@ import { Op, Sequelize } from 'sequelize';
 import * as async from 'async';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
 import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class ChatService {
@@ -65,10 +66,13 @@ export class ChatService {
   }
 
   //   async getMessages(body: IGetMessages): Promise<IRequestMessage> {
-  async getMessages(req, email: string): Promise<IRequestMessage> {
+  async getMessages(req: any): Promise<IRequestMessage> {
     const limit = 20;
     const page = 1;
     const offset = page * limit - limit;
+
+    const token = req.headers.authorization;
+    const result = jwt.verify(token, process.env.JWT);
 
     async function getMessagesPerRoom(room: number) {
       const perRoom = await Message.findAll({
@@ -105,7 +109,9 @@ export class ChatService {
 
     try {
       const access = await RoomAccess.findAll({
-        include: [{ model: User, where: { email: email }, attributes: ['id'] }],
+        include: [
+          { model: User, where: { email: result.email }, attributes: ['id'] },
+        ],
       });
 
       const rooms = access.map((item) => item.roomId);
@@ -139,14 +145,16 @@ export class ChatService {
   }
 
   async getMoreMessages(
-    req,
-    email: string,
+    req: any,
     page: number,
     chat: string,
   ): Promise<IRequestMessage> {
     const limit = 20;
     //   const page = parseInt(body.page) || 1;
     const offset = page * limit - limit;
+
+    const token = req.headers.authorization;
+    const result = jwt.verify(token, process.env.JWT);
 
     async function getMessagesPerRoom(room: number) {
       const perRoom = await Message.findAll({
@@ -183,7 +191,9 @@ export class ChatService {
 
     try {
       const access = await RoomAccess.findAll({
-        include: [{ model: User, where: { email: email }, attributes: ['id'] }],
+        include: [
+          { model: User, where: { email: result.email }, attributes: ['id'] },
+        ],
       });
 
       const rooms = access.map((item) => item.roomId);
@@ -227,7 +237,7 @@ export class ChatService {
   }
 
   async getSearchMessages(
-    email: string,
+    req: any,
     query: string,
     chat: string,
   ): Promise<IRequestMessage> {
@@ -236,6 +246,13 @@ export class ChatService {
       //   const page = parseInt(body.page) || 1;
       const page = 1;
       const offset = page * limit - limit;
+
+      // const token = req.headers.authorization;
+      // const result = jwt.verify(token, process.env.JWT);
+      // const user = await User.findOne({
+      //   where: { email: result.email },
+      //   include: [{ model: WorkerProfile }],
+      // });
 
       const result = await Message.findAll({
         include: [
@@ -247,6 +264,11 @@ export class ChatService {
                 model: Profile,
                 as: 'profile',
                 attributes: ['pseudonym', 'color', 'profilePic'],
+              },
+              {
+                model: WorkerProfile,
+                as: 'workerProfile',
+                attributes: ['name', 'color', 'profilePic'],
               },
             ],
           },
@@ -280,7 +302,7 @@ export class ChatService {
   }
 
   async getCalendarMessages(
-    email: string,
+    req: any,
     date: string,
     chat: string,
   ): Promise<IRequestMessage> {
@@ -303,6 +325,11 @@ export class ChatService {
                 model: Profile,
                 as: 'profile',
                 attributes: ['pseudonym', 'color', 'profilePic'],
+              },
+              {
+                model: WorkerProfile,
+                as: 'workerProfile',
+                attributes: ['name', 'color', 'profilePic'],
               },
             ],
           },
@@ -334,7 +361,7 @@ export class ChatService {
     }
   }
 
-  async getMessagesNumber(email: string): Promise<IRequestMessage> {
+  async getMessagesNumber(req: any): Promise<IRequestMessage> {
     async function getMessagesPerRoom(room: any) {
       const perRoom = await Message.count({
         where: {
@@ -345,9 +372,14 @@ export class ChatService {
       return { room: room.roomId, amount: perRoom };
     }
 
+    const token = req.headers.authorization;
+    const result = jwt.verify(token, process.env.JWT);
+
     try {
       const access = await RoomAccess.findAll({
-        include: [{ model: User, where: { email: email }, attributes: ['id'] }],
+        include: [
+          { model: User, where: { email: result.email }, attributes: ['id'] },
+        ],
       });
 
       const rooms = access.map((item) => {
@@ -371,14 +403,6 @@ export class ChatService {
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
     }
   }
-
-  async getMessagesSince(email: string) {
-    console.log('get number');
-  }
-
-  // getFile(image: string, res: any): any {
-  //   return res.sendFile(image, { root: './uploads' });
-  // }
 
   getFile(image: string, res: any): any {
     return res.sendFile(image, { root: './uploads' });

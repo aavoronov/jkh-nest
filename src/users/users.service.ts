@@ -1,6 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+  CreateUserByEmailDto,
+  CreateUserByPhoneDto,
+} from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { User } from './entities/user.entity';
@@ -8,7 +11,7 @@ import { Profile } from './entities/profile.entity';
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import * as bcrypt from 'bcrypt';
 import { CheckPassword } from './interfaces/user.interface';
-import { checkEmail } from '../utils/functions';
+import { checkEmail, checkPhone, maskPhone } from '../utils/functions';
 import { Verifications } from '../verifications/entities/verification.entity';
 import { UserDto } from './dto/user.dto';
 import * as jwt from 'jsonwebtoken';
@@ -25,6 +28,8 @@ import { WorkerProfile } from './entities/worker-profile.entity';
 import { Op } from 'sequelize';
 import { Base64 } from 'js-base64';
 import { writeFile } from 'fs';
+import { PhoneVerifications } from '../verifications/entities/phone-verification.entity';
+import fetch from 'cross-fetch';
 
 const length = 8;
 const numbers = /[0-9]/g;
@@ -85,7 +90,7 @@ export class UsersService {
     return { status: true, message: '' };
   };
 
-  async create(user: CreateUserDto) {
+  async signUp(user: CreateUserByEmailDto) {
     try {
       const { email, password, passwordConfirmation } = user;
 
@@ -161,12 +166,37 @@ export class UsersService {
       }
 
       // return { email: newUser.email };
-      return {};
+      return { status: StatusCodes.CREATED, text: 'success' };
     } catch (e) {
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
     }
+  }
+
+  async signUpByPhone(user: CreateUserByPhoneDto) {
+    const { phone } = user;
+    const newUser = await User.create({
+      phone: phone,
+    });
+    if (newUser) {
+      let randomColor: Color, pastelColor: Color, contrast: number;
+      while (1) {
+        randomColor = Color.rgb(
+          UsersService.getRandomInt(255),
+          UsersService.getRandomInt(255),
+          UsersService.getRandomInt(255),
+        );
+        pastelColor = randomColor.saturate(0.5).mix(Color('white'), 0.2);
+        contrast = pastelColor.contrast(Color('white'));
+        if (contrast > 2) break;
+      }
+
+      await Profile.create({ userId: newUser.id, color: pastelColor.hex() });
+    }
+
+    // return { email: newUser.email };
+    return { status: StatusCodes.CREATED, text: 'success' };
   }
 
   async authorizeByEmail(userData: UserDto) {
@@ -194,7 +224,14 @@ export class UsersService {
 
       const user = await User.findOne({
         where: { email: email },
-        attributes: ['email', 'password', 'role', 'isDeleted', 'isBlocked'],
+        attributes: [
+          'email',
+          'password',
+          'phone',
+          'role',
+          'isDeleted',
+          'isBlocked',
+        ],
         include: [
           { model: Verifications, attributes: ['token'] },
           { model: WorkerProfile, attributes: ['isResolved'] },
@@ -269,6 +306,221 @@ export class UsersService {
         message: ReasonPhrases.OK,
         token: accessToken,
         user: { email: user.email, role: user.role },
+      };
+    } catch (e) {
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async createPhoneVerification(body: { phone: string }) {
+    try {
+      const { phone } = body;
+
+      if (!phone)
+        throw new HttpException('Телефон не введен', StatusCodes.BAD_REQUEST, {
+          cause: new Error('Some Error'),
+        });
+
+      if (!checkPhone(phone).correct)
+        throw new HttpException(
+          'Некорректный формат номера телефона',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+
+      const phoneSanitized = checkPhone(phone).result;
+
+      const existingUser = await User.findOne({
+        where: { phone: phone },
+      });
+
+      // if (!existingUser) {
+      //   this.signUpByPhone({ phone: phone });
+      //   console.log('created');
+      // } else {
+      //   console.log('existed');
+      // }
+
+      if (!existingUser) {
+        throw new HttpException(
+          'Пользователь не найден',
+          StatusCodes.BAD_REQUEST,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const user = await User.findOne({
+        where: { phone: phone },
+      });
+
+      if (user && user.isDeleted) {
+        throw new HttpException('Аккаунт удален', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      if (user && user.isBlocked) {
+        throw new HttpException('Аккаунт заблокирован', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      await PhoneVerifications.destroy({ where: { userId: user.id } });
+
+      const otp = Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0');
+
+      console.log('otp', otp);
+
+      const verification = await PhoneVerifications.create({
+        userId: user.id,
+        otp: otp,
+      });
+
+      const fetchData = async () => {
+        const res = await fetch(
+          `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/auth`,
+          // `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=${verification.otp}&sign=SMS Aero`,
+        );
+        return res;
+      };
+
+      const status = (await fetchData()).status;
+
+      console.log('status', status);
+
+      if (status !== 200) {
+        throw new HttpException('Ошибка SMS-сервиса', StatusCodes.BAD_GATEWAY, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      return { otp: verification.otp };
+
+      // fetch(
+      //   `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=${verification.otp}&sign=SMS Aero`,
+      // ).then(
+      //   (res) => {
+      //     return { otp: verification.otp };
+      //   },
+      //   (error) => console.log('error', error),
+      // );
+    } catch (e) {
+      console.log('e', e);
+      throw new HttpException(e.message, e.status, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
+  async authorizeByPhone(body: { phone: string; otp: string }) {
+    // console.log(email, password);
+    const { phone, otp } = body;
+    console.log(phone);
+
+    try {
+      // let passwordMatches = false;
+
+      if (otp.length < 4) {
+        throw new HttpException('Введите код доступа', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      const user = await User.findOne({
+        where: { phone: phone },
+        attributes: [
+          'id',
+          'email',
+          'phone',
+          'role',
+          'isDeleted',
+          'isBlocked',
+          'password',
+        ],
+        include: [
+          { model: Verifications, attributes: ['token'] },
+          { model: WorkerProfile, attributes: ['isResolved'] },
+        ],
+      });
+
+      if (user && user.isDeleted) {
+        throw new HttpException('Аккаунт удален', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      if (user && user.isBlocked) {
+        throw new HttpException('Аккаунт заблокирован', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      if (user.role === 'admin') {
+        throw new HttpException(
+          'Нет доступа к публичной части',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (user.role !== 'user' && !user.workerProfile?.isResolved) {
+        throw new HttpException(
+          'Ваша учетная запись еще не одобрена администратором. Пожалуйста, ожидайте email',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const verification = await PhoneVerifications.findOne({
+        where: {
+          userId: user.id,
+          createdAt: { [Op.gt]: new Date(Date.now() - 5 * 60 * 1000) },
+          //5 minutes otp lifetime
+        },
+      });
+
+      if (!verification) {
+        throw new HttpException(
+          'Код доступа истек. Запросите новый',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      // console.log('otp', verification.otp);
+
+      if (otp && otp !== verification.otp) {
+        throw new HttpException('Неверный код доступа', StatusCodes.FORBIDDEN, {
+          cause: new Error('Some Error'),
+        });
+      }
+
+      const accessToken = jwt.sign(user.toJSON(), process.env.JWT, {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      });
+
+      const fieldsRequired = !user.email || !user.password;
+      console.log('fieldsRequired', fieldsRequired);
+
+      return {
+        status: StatusCodes.OK,
+        message: ReasonPhrases.OK,
+        token: accessToken,
+        user: { role: user.role, fieldsRequired: fieldsRequired },
       };
     } catch (e) {
       throw new HttpException(e.message, e.status, {
@@ -415,7 +667,7 @@ export class UsersService {
           },
         );
       }
-      return { email: result.email, role: result.role };
+      return { email: result.email, phone: result.phone, role: result.role };
       // console.log(result);
     } catch (e) {
       throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
@@ -488,18 +740,20 @@ export class UsersService {
       console.log(result);
 
       if (!!updateData.newPassword) {
-        const passwordIsValid = UsersService.validPassword(
-          updateData.oldPassword,
-          user.password,
-        );
-        if (!passwordIsValid) {
-          throw new HttpException(
-            'Текущий пароль введен неправильно',
-            StatusCodes.FORBIDDEN,
-            {
-              cause: new Error('Some Error'),
-            },
+        if (!!user.password) {
+          const passwordIsValid = UsersService.validPassword(
+            updateData.oldPassword,
+            user.password,
           );
+          if (!passwordIsValid) {
+            throw new HttpException(
+              'Текущий пароль введен неправильно',
+              StatusCodes.FORBIDDEN,
+              {
+                cause: new Error('Some Error'),
+              },
+            );
+          }
         }
         const salt = bcrypt.genSaltSync();
         const passwordHash = await bcrypt.hash(updateData.newPassword, salt);
@@ -558,6 +812,8 @@ export class UsersService {
         );
       }
       const user = await User.findOne({ where: { email: result.email } });
+
+      // console.log('user', user);
 
       const passwordIsValid = UsersService.validPassword(
         updateData.password,
@@ -622,6 +878,84 @@ export class UsersService {
     }
   }
 
+  async updatePhone(req: any, updateData: { phone: string; password: string }) {
+    try {
+      const token = await req.headers.authorization;
+      console.log(token);
+
+      const result = await jwt.verify(token, process.env.JWT);
+      console.log(updateData);
+      if (!!result.message) {
+        throw new HttpException(
+          'Сессия истекла или недействительна',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+      const user = await User.findOne({ where: { email: result.email } });
+
+      // console.log('user', user);
+
+      const passwordIsValid = UsersService.validPassword(
+        updateData.password,
+        user.password,
+      );
+      if (!passwordIsValid) {
+        throw new HttpException(
+          'Текущий пароль введен неправильно',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (!checkPhone(updateData.phone).correct) {
+        console.log('incorrect');
+        throw new HttpException(
+          'Некорректный формат номера телефона',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      if (user.phone === updateData.phone) {
+        throw new HttpException(
+          'Новый номер телефона не должен совпадать со старым',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      const userWithProvidedPhone = await User.findOne({
+        where: { phone: updateData.phone },
+      });
+      if (!!userWithProvidedPhone) {
+        throw new HttpException(
+          'Номер телефона уже занят',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
+      await user.update({ phone: updateData.phone });
+
+      return { status: StatusCodes.OK, text: 'success' };
+    } catch (e) {
+      throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
+        cause: new Error('Some Error'),
+      });
+    }
+  }
+
   async delete(req: any) {
     try {
       const token = await req.headers.authorization;
@@ -662,39 +996,32 @@ export class UsersService {
       email,
       phone,
       type,
-      riasToken,
+      // riasToken,
       latitude,
       longitude,
       address,
     } = createWorkerProfileDto;
     let dbType;
+
     switch (type) {
-      case type:
-        'Для УК, ТСЖ';
+      case 'Для УК, ТСЖ':
         dbType = 'uk';
         break;
 
-      case type:
-        'Для Управляющего по дому';
+      case 'Для Управляющего по дому':
         dbType = 'upravdom';
         break;
 
-      case type:
-        'Для рекламодателей';
+      case 'Для рекламодателей':
         dbType = 'admakers';
         break;
 
-      case type:
-        'Для магазинов';
+      case 'Для магазинов':
         dbType = 'stores';
         break;
 
-      case type:
-        'Для представителей бизнеса';
+      case 'Для представителей бизнеса':
         dbType = 'business';
-        break;
-
-      default:
         break;
     }
 
@@ -723,23 +1050,23 @@ export class UsersService {
           );
         }
 
-      if (!!riasToken) {
-        const checkTokenExistence = await WorkerProfile.findOne({
-          where: {
-            riasToken: riasToken,
-          },
-        });
+      // if (!!riasToken) {
+      //   const checkTokenExistence = await WorkerProfile.findOne({
+      //     where: {
+      //       riasToken: riasToken,
+      //     },
+      //   });
 
-        if (!!checkTokenExistence) {
-          throw new HttpException(
-            'Указанный токен РИАС ЖКХ уже используется',
-            StatusCodes.CONFLICT,
-            {
-              cause: new Error('Some Error'),
-            },
-          );
-        }
-      }
+      //   if (!!checkTokenExistence) {
+      //     throw new HttpException(
+      //       'Указанный токен РИАС ЖКХ уже используется',
+      //       StatusCodes.CONFLICT,
+      //       {
+      //         cause: new Error('Some Error'),
+      //       },
+      //     );
+      //   }
+      // }
 
       const re = /^\S+@\S+\.\S+$/;
       if (phone.includes('_')) {
@@ -807,7 +1134,7 @@ export class UsersService {
         snils,
         contract,
         name,
-        riasToken: riasToken ?? null,
+        // riasToken: riasToken ?? null,
         address: address,
         point: { type: 'Point', coordinates: [longitude, latitude] },
         //flipped

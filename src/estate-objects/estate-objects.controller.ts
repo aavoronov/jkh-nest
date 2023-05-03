@@ -29,6 +29,11 @@ export class EstateObjectsController {
     return this.estateObjectsService.getObjects(req);
   }
 
+  @Get('notifications')
+  getObjectsWithNotifications(@Req() req: any) {
+    return this.estateObjectsService.getObjectsWithNotifications(req);
+  }
+
   @Delete(':id')
   deleteObject(@Req() req: any, @Param('id') id: string) {
     return this.estateObjectsService.deleteObject(req, +id);

@@ -32,6 +32,11 @@ export class TransactionsController {
     return this.transactionsService.getMyTransactions(req, page);
   }
 
+  @Get('expenses')
+  getMyExpenses(@Req() req: any) {
+    return this.transactionsService.getMyExpenses(req);
+  }
+
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.transactionsService.findOne(+id);

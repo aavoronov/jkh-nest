@@ -29,6 +29,13 @@ export class Service extends Model<Service> {
   @ApiProperty()
   @Column({
     type: DataType.STRING,
+    allowNull: false,
+  })
+  name: string;
+
+  @ApiProperty()
+  @Column({
+    type: DataType.STRING,
     allowNull: true,
   })
   phone: string;
@@ -61,12 +68,25 @@ export class Service extends Model<Service> {
   })
   address: string;
 
+  @Column({
+    type: DataType.GEOMETRY('Point'),
+    allowNull: false,
+  })
+  point: any;
+
   @ApiProperty()
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
   experience: string;
+
+  @ApiProperty()
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isOrg: boolean;
 
   @ApiProperty()
   @Column({
@@ -126,7 +146,7 @@ export class Service extends Model<Service> {
 
   @ApiProperty()
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
     allowNull: false,
   })
   description: string;

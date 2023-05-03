@@ -14,7 +14,7 @@ import { MapObjectReview } from './map-object-review.entity';
 @Table
 export class MapObjectReply extends Model<MapObjectReply> {
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(1500),
   })
   text: string;
 

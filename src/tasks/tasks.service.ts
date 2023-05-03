@@ -20,19 +20,19 @@ export class TasksService {
   ) {}
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron('0 0 3 * * *')
-  async handleCron() {
-    const profiles = await WorkerProfile.findAll({
-      where: { riasToken: { [Op.ne]: null } },
-    });
-    const tokens = profiles.map((item) => {
-      return { workerId: item.id, token: item.riasToken };
-    });
+  // @Cron('0 0 3 * * *')
+  // async handleCron() {
+  //   const profiles = await WorkerProfile.findAll({
+  //     where: { riasToken: { [Op.ne]: null } },
+  //   });
+  //   const tokens = profiles.map((item) => {
+  //     return { workerId: item.id, token: item.riasToken };
+  //   });
 
-    await this.utilitiesService.getAccounts(tokens);
+  //   await this.utilitiesService.getAccounts(tokens);
 
-    this.logger.debug('Cron fired');
-  }
+  //   this.logger.debug('Cron fired');
+  // }
 
   @Cron('*/5 * * * *')
   async checkChatAds() {
