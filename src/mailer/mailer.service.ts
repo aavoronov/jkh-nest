@@ -21,9 +21,9 @@ export class MailerService {
 
   user = 'voronov.xcvi';
   pass = 'ogkluftufzovrllc';
-  mailerUrl = 'http://localhost:5000/api/v1/';
+  mailerUrl = 'http://api.1203521-cu41329.tw1.ru/';
   adminEmail = 'stinger1221@mail.ru';
-  adminUrl = 'http://localhost:5000/admin';
+  adminUrl = 'http://api.1203521-cu41329.tw1.ru/admin/';
 
   transporter = createTransport({
     host: 'smtp.yandex.ru',
@@ -60,7 +60,7 @@ export class MailerService {
     try {
       const output = `
            
-            <p>Аккаунт зарегистрирован. <a href="${this.mailerUrl}/users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
+            <p>Аккаунт зарегистрирован. <a href="${this.mailerUrl}users/confirm?key=${body.verification}">Нажмите, чтобы подтвердить ваш аккаунт.</a></p>
             
         `;
       const mailOptions = {
