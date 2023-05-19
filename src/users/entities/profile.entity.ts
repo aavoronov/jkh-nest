@@ -1,10 +1,9 @@
 import {
-  Table,
   Column,
-  Model,
   DataType,
   ForeignKey,
-  BelongsTo,
+  Model,
+  Table,
 } from 'sequelize-typescript';
 import { RoomAccess } from '../../chat-rooms/entities/room-access.entity';
 import { User } from './user.entity';

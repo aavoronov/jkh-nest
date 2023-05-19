@@ -1,22 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { Base64 } from 'js-base64';
 import { diskStorage } from 'multer';
 import { ChatAdService } from './chat-ad.service';
 import { CreateChatAdDto } from './dto/create-chat-ad.dto';
-import { UpdateChatAdDto } from './dto/update-chat-ad.dto';
 import { PayForChatAdDto } from './dto/pay-for-chat-ad-dto';
-import { ApiTags } from '@nestjs/swagger';
+import { UpdateChatAdDto } from './dto/update-chat-ad.dto';
 
 @ApiTags('chat-ads')
 @Controller('chat-ads')
@@ -33,14 +33,14 @@ export class ChatAdController {
             const fileName = Base64.encodeURI(
               (Math.random() * 1000).toString() + Date.now(),
             );
-            console.log(file);
+            // console.log(file);
             const dbFileName =
               fileName +
               file.originalname.slice(file.originalname.lastIndexOf('.'));
             req.body.filename = dbFileName;
             cb(null, `${dbFileName}`);
           } catch (e) {
-            console.log(e);
+            // console.log(e);
           }
         },
       }),

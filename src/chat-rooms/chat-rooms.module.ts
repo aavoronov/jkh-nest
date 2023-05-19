@@ -1,9 +1,8 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { ChatRoomsService } from './chat-rooms.service';
-import { ChatRoomsController } from './chat-rooms.controller';
-import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
-import { EstateObjectsModule } from '../estate-objects/estate-objects.module';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { ChatRoomsController } from './chat-rooms.controller';
+import { ChatRoomsService } from './chat-rooms.service';
 
 @Module({
   controllers: [ChatRoomsController],

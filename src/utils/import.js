@@ -11,15 +11,15 @@ function test(file) {
         .split(';')
         .map((e, index) => {
           if (index === 1 || index === 2 || index === 4) {
-            // console.log(e.trim().split(',')[0]);
+            // // console.log(e.trim().split(',')[0]);
             return e.trim().split(',')[0];
           }
           if (index === 5) {
-            // console.log(e.trim().split(' '));
+            // // console.log(e.trim().split(' '));
             return e.trim().split(' ');
           }
           if (index === 0 || index === 3 || index === 6) {
-            // console.log(e.trim());
+            // // console.log(e.trim());
             return e.trim();
           }
         })
@@ -30,9 +30,9 @@ function test(file) {
 
   //   rawData.forEach((i) => '')
 
-  // console.log(rawData);
-  //   console.log(JSON.stringify(data, '', 2)); // as json
-  //   console.log('test');
+  // // console.log(rawData);
+  //   // console.log(JSON.stringify(data, '', 2)); // as json
+  //   // console.log('test');
   return rawData;
 }
 

@@ -49,6 +49,15 @@ export class ChatAd extends Model<ChatAd> {
 
   @ApiProperty()
   @Column({
+    type: DataType.INTEGER,
+    unique: false,
+    allowNull: false,
+    defaultValue: 1,
+  })
+  displaysLeft: number;
+
+  @ApiProperty()
+  @Column({
     type: DataType.TIME,
     unique: false,
     allowNull: false,

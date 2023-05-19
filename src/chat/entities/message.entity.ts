@@ -1,12 +1,12 @@
-import { ChatAd } from '../../chat-ad/entities/chat-ad.entity';
 import {
-  Table,
+  BelongsTo,
   Column,
-  Model,
   DataType,
   ForeignKey,
-  BelongsTo,
+  Model,
+  Table,
 } from 'sequelize-typescript';
+import { ChatAd } from '../../chat-ad/entities/chat-ad.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { User } from '../../users/entities/user.entity';
 

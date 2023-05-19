@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Model, DataType, Table, Column, HasMany } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
 import { TradingPlatformSubcategory } from './trading-platform-subcategory.entity';
 
 @Table

@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
-import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
 @Module({
   controllers: [UsersController],

@@ -1,13 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
-  BelongsTo,
-  ForeignKey,
-} from 'sequelize-typescript';
-import { Poll } from './poll.entity';
+import { BelongsTo, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
 import { PollOption } from './poll-options.entity';
 

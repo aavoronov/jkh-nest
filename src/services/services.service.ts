@@ -1,20 +1,19 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { writeFile } from 'fs';
+import { StatusCodes } from 'http-status-codes';
 import { Base64 } from 'js-base64';
+import * as jwt from 'jsonwebtoken';
+import { Op, Sequelize } from 'sequelize';
+import { Literal } from 'sequelize/types/utils';
+import { Profile } from '../users/entities/profile.entity';
+import { User } from '../users/entities/user.entity';
+import { Verifications } from '../verifications/entities/verification.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
-import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServiceCategory } from './entities/service-category.entity';
+import { ServiceReview } from './entities/service-review';
 import { ServiceSubcategory } from './entities/service-subcategory.entity';
 import { Service } from './entities/service.entity';
-import * as jwt from 'jsonwebtoken';
-import { User } from '../users/entities/user.entity';
-import { StatusCodes } from 'http-status-codes';
-import { Op, Sequelize } from 'sequelize';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { Verifications } from '../verifications/entities/verification.entity';
-import { ServiceReview } from './entities/service-review';
-import { Profile } from '../users/entities/profile.entity';
-import { Literal } from 'sequelize/types/utils';
 
 @Injectable()
 export class ServicesService {
@@ -22,12 +21,12 @@ export class ServicesService {
     files: Array<Express.Multer.File>,
   ): Promise<string[]> {
     try {
-      // console.log(files);
+      // // console.log(files);
       const filenames = [];
 
       files.forEach((item: Express.Multer.File) => {
         let dbFileName = null;
-        // console.log(item.mimetype);
+        // // console.log(item.mimetype);
 
         const fileName = Base64.encodeURI(
           (Math.random() * 1000).toString() + Date.now(),
@@ -46,7 +45,7 @@ export class ServicesService {
       });
       return filenames;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -68,8 +67,8 @@ export class ServicesService {
     req: any,
   ) {
     try {
-      console.log(createServiceDto);
-      console.log(files);
+      // console.log(createServiceDto);
+      // console.log(files);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -131,7 +130,7 @@ export class ServicesService {
 
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -214,7 +213,7 @@ export class ServicesService {
 
       //radius
 
-      console.log('whereStatement', whereStatement);
+      // console.log('whereStatement', whereStatement);
 
       const services = await Service.findAll({
         // where: whereStatement,
@@ -264,11 +263,11 @@ export class ServicesService {
         },
       });
 
-      console.log(count);
+      // console.log(count);
 
       return { count, services };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -307,12 +306,12 @@ export class ServicesService {
         rating,
       });
 
-      console.log(!!newReview);
+      // console.log(!!newReview);
 
-      console.log(!!existingReview);
+      // console.log(!!existingReview);
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.CONFLICT, {
         cause: new Error('Some Error'),
       });
@@ -358,7 +357,7 @@ export class ServicesService {
 
       return service;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -398,7 +397,7 @@ export class ServicesService {
       let rating = 0;
       count.forEach((item) => (rating += item.rating));
 
-      console.log(count.length ? rating / count.length : 0);
+      // console.log(count.length ? rating / count.length : 0);
 
       return {
         reviews,
@@ -406,7 +405,7 @@ export class ServicesService {
         count: count.length,
       };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -425,7 +424,7 @@ export class ServicesService {
         where: { email: result.email },
       });
 
-      console.log(page);
+      // console.log(page);
 
       const services = await Service.findAll({
         where: { userId: user.id },
@@ -450,7 +449,7 @@ export class ServicesService {
         where: { userId: user.id },
       });
 
-      console.log(count);
+      // console.log(count);
 
       return { count, services };
     } catch (e) {
@@ -483,7 +482,7 @@ export class ServicesService {
       }
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });

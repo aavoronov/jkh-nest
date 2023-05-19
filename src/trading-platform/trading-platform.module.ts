@@ -1,10 +1,9 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { TradingPlatformService } from './trading-platform.service';
-import { TradingPlatformController } from './trading-platform.controller';
-import { AuthMiddleware } from '../utils/middleware/auth.middleware';
-import { AccessMiddleware } from '../utils/middleware/access.middleware';
-import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionsModule } from '../transactions/transactions.module';
+import { AccessMiddleware } from '../utils/middleware/access.middleware';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { TradingPlatformController } from './trading-platform.controller';
+import { TradingPlatformService } from './trading-platform.service';
 
 @Module({
   controllers: [TradingPlatformController],

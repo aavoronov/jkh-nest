@@ -1,35 +1,29 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   Query,
   Req,
-  Res,
-  UseInterceptors,
   UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import {
-  CreateUserByPhoneDto,
-  CreateUserByEmailDto,
-} from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ProfileDto } from './dto/profile.dto';
-import { ApiTags, ApiExcludeEndpoint } from '@nestjs/swagger';
-import { UserDto } from './dto/user.dto';
-import { RestorePasswordDto } from './dto/restore.dto';
-import { UpdateEmailDto } from './dto/update-email.dto';
 import {
   FileFieldsInterceptor,
   FileInterceptor,
 } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { ApiTags } from '@nestjs/swagger';
 import { Base64 } from 'js-base64';
+import { diskStorage } from 'multer';
+import { CreateUserByEmailDto } from './dto/create-user.dto';
 import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
+import { RestorePasswordDto } from './dto/restore.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @ApiTags('users')
@@ -59,13 +53,13 @@ export class UsersController {
       snils: Express.Multer.File;
     },
   ) {
-    console.log(files);
-    console.log('createWorkerProfileDto', createWorkerProfileDto);
+    // console.log(files);
+    // console.log('createWorkerProfileDto', createWorkerProfileDto);
     return this.usersService.createWorkerApplication(
       createWorkerProfileDto,
       files,
     );
-    // console.log(createWorkerApplicationDto);
+    // // console.log(createWorkerApplicationDto);
   }
 
   @Post('approve/:id')
@@ -113,21 +107,21 @@ export class UsersController {
             const fileName = Base64.encodeURI(
               (Math.random() * 1000).toString() + Date.now(),
             );
-            console.log(file);
+            // console.log(file);
             const dbFileName =
               fileName +
               file.originalname.slice(file.originalname.lastIndexOf('.'));
             req.body.filename = dbFileName;
             cb(null, `${dbFileName}`);
           } catch (e) {
-            console.log(e);
+            // console.log(e);
           }
         },
       }),
     }),
   )
   update(@Req() req: any, @Body() updateData: UpdateUserDto) {
-    console.log(updateData);
+    // console.log(updateData);
     return this.usersService.update(req, updateData);
   }
 

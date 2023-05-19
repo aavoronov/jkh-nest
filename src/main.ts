@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { SocketIOAdapter } from './socket-io-adapter';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+import { SocketIOAdapter } from './socket-io-adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });

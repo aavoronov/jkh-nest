@@ -1,14 +1,13 @@
+import * as bcrypt from 'bcrypt';
 import {
+  BeforeCreate,
+  BeforeUpdate,
+  Column,
+  ForeignKey,
   Model,
   Table,
-  ForeignKey,
-  Column,
-  BeforeUpdate,
-  BeforeCreate,
-  BelongsTo,
 } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
-import * as bcrypt from 'bcrypt';
 
 @Table
 export class Verifications extends Model {

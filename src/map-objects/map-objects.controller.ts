@@ -1,27 +1,25 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
+  Post,
+  Query,
   Req,
-  UseInterceptors,
   UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { MapObjectsService } from './map-objects.service';
-import { CreateMapObjectDto } from './dto/create-map-object.dto';
-import { UpdateMapObjectDto } from './dto/update-map-object.dto';
-import { test } from '../utils/import.js';
-import { MapObject } from './entities/map-object.entity';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
-import { MapObjectDetails } from './entities/map-object-details.entity';
 import { Op } from 'sequelize';
-import { CreateReviewDto } from './dto/create-review.dto';
+import { test } from '../utils/import.js';
+import { CreateMapObjectDto } from './dto/create-map-object.dto';
 import { CreateReplyDto } from './dto/create-reply.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { MapObjectDetails } from './entities/map-object-details.entity';
+import { MapObject } from './entities/map-object.entity';
+import { MapObjectsService } from './map-objects.service';
 
 @ApiTags('map-objects')
 @Controller('map-objects')
@@ -49,7 +47,7 @@ export class MapObjectsController {
     });
     // (i) => sequelize.query('UPDATE users SET y = 42 WHERE x = 12'),
 
-    // console.log(data);
+    // // console.log(data);
     await MapObject.destroy({ where: { category: { [Op.is]: null } } });
     return { status: StatusCodes.OK, text: 'success' };
   }
@@ -57,6 +55,16 @@ export class MapObjectsController {
   @Get()
   getObjects() {
     return this.mapObjectsService.getObjects();
+  }
+
+  @Get('bounds')
+  getObjectsInBounds(
+    @Query('lon0') lon0: string,
+    @Query('lat0') lat0: string,
+    @Query('lon1') lon1: string,
+    @Query('lat1') lat1: string,
+  ) {
+    return this.mapObjectsService.getObjectsInBounds(lon0, lat0, lon1, lat1);
   }
 
   @Get(':id')

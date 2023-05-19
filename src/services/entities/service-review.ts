@@ -3,10 +3,8 @@ import {
   Column,
   DataType,
   ForeignKey,
-  Table,
   Model,
-  HasOne,
-  HasMany,
+  Table,
 } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
 import { Service } from './service.entity';

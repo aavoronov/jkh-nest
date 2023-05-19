@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Model,
-  DataType,
-  Table,
-  Column,
   BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
   HasMany,
+  Model,
+  Table,
 } from 'sequelize-typescript';
 import { ServiceCategory } from './service-category.entity';
 import { Service } from './service.entity';

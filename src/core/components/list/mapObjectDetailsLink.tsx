@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Box, H3 } from '@adminjs/design-system';
-import { ActionProps } from 'adminjs';
 import { ShowPropertyProps } from 'adminjs/types/src';
-import { MapObjectDetails } from '../../../map-objects/entities/map-object-details.entity';
+import React, { useState } from 'react';
 
 const mapObjectDetailsLink = (props: ShowPropertyProps) => {
   const { record, property } = props;
-  console.log(record);
+  // console.log(record);
   const [id, setId] = useState<number>(0);
 
   // async function getId() {
@@ -14,10 +11,10 @@ const mapObjectDetailsLink = (props: ShowPropertyProps) => {
   //     const details = await MapObjectDetails.findOne({
   //       where: { objectId: record.params.id },
   //     });
-  //     console.log(details.id);
+  //     // console.log(details.id);
   //     setId(details.id);
   //   } catch (e) {
-  //     console.log(e);
+  //     // console.log(e);
   //   }
   // }
 

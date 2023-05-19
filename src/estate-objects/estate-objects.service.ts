@@ -1,19 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
+import * as jwt from 'jsonwebtoken';
 import { Op, Sequelize } from 'sequelize';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
+import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
+import { Message } from '../chat/entities/message.entity';
 import { User } from '../users/entities/user.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
 import { CreateEstateObjectDto } from './dto/create-estate-object.dto';
 import { UpdateEstateObjectDto } from './dto/update-estate-object.dto';
 import { EstateObjectRights } from './entities/estate-object-rights.entity';
 import { EstateObject } from './entities/estate-object.entity';
-import * as jwt from 'jsonwebtoken';
-import { Verifications } from '../verifications/entities/verification.entity';
-import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
-import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
-import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
-import { Message } from '../chat/entities/message.entity';
 
 @Injectable()
 export class EstateObjectsService {
@@ -51,13 +49,13 @@ export class EstateObjectsService {
 
     const myChats = chats.map((item) => item.chat.id);
     // const roomsIds = rooms.map(item => item.id)
-    // console.log(roomsAvailable);
-    // console.log(myChats);
+    // // console.log(roomsAvailable);
+    // // console.log(myChats);
     const chatsToDelete = myChats.filter(
       (item) => !roomsAvailable.includes(item),
     );
 
-    console.log(chatsToDelete);
+    // console.log(chatsToDelete);
 
     if (!!chatsToDelete.length) {
       const room = await RoomAccess.destroy({
@@ -67,12 +65,12 @@ export class EstateObjectsService {
         },
       });
 
-      console.log(room);
+      // console.log(room);
     }
   }
 
   async createObject(createEstateObjectDto: CreateEstateObjectDto) {
-    console.log(createEstateObjectDto);
+    // console.log(createEstateObjectDto);
     const { email, address, latitude, longitude, apartment, account, isOwner } =
       createEstateObjectDto;
 
@@ -80,17 +78,17 @@ export class EstateObjectsService {
 
     const shortAddress =
       address.split(', ').at(-2) + ', ' + address.split(', ').at(-1);
-    console.log(shortAddress);
+    // console.log(shortAddress);
 
     const [chatRoom, created] = await ChatRoom.findOrCreate({
       where: { address: shortAddress },
     });
 
     if (!created) {
-      console.log('room exists');
+      // console.log('room exists');
     }
 
-    console.log(!!chatRoom);
+    // console.log(!!chatRoom);
 
     let object = await EstateObject.findOne({
       where: {
@@ -103,7 +101,7 @@ export class EstateObjectsService {
     });
 
     if (!!object) {
-      console.log('object exists');
+      // console.log('object exists');
     } else {
       object = await EstateObject.create({
         address: address,
@@ -115,7 +113,7 @@ export class EstateObjectsService {
       });
     }
 
-    // console.log(object);
+    // // console.log(object);
 
     if (!object) {
       throw new HttpException('Что-то пошло не так', StatusCodes.BAD_REQUEST, {
@@ -149,7 +147,7 @@ export class EstateObjectsService {
       userId: user.id,
     });
 
-    console.log(!!object);
+    // console.log(!!object);
 
     return { status: StatusCodes.OK, text: 'success' };
   }
@@ -166,7 +164,7 @@ export class EstateObjectsService {
       where: { userId: user.id },
     });
 
-    // console.log(objects);
+    // // console.log(objects);
     return objects;
   }
 
@@ -234,7 +232,7 @@ export class EstateObjectsService {
       where: { userId: user.id },
     });
 
-    // console.log(objects);
+    // // console.log(objects);
     return objects;
   }
 
@@ -263,11 +261,11 @@ export class EstateObjectsService {
   //       return { roomId: item.roomId, updatedAt: item.updatedAt };
   //     });
 
-  //     console.log(rooms);
+  //     // console.log(rooms);
 
   //     const results = await async.map(rooms, getMessagesPerRoom);
 
-  //     console.log(results);
+  //     // console.log(results);
 
   //     return {
   //       status: StatusCodes.OK,
@@ -276,7 +274,7 @@ export class EstateObjectsService {
   //       // data: msgs,
   //     };
   //   } catch (e) {
-  //     console.log(e);
+  //     // console.log(e);
   //     return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
   //   }
   // }
@@ -292,7 +290,7 @@ export class EstateObjectsService {
       include: [{ model: EstateObject }],
       where: { id: id, userId: user.id },
     });
-    // console.log(object);
+    // // console.log(object);
     await object.destroy();
 
     await this.deleteUnauthorizedChatsAccess(user.id);
@@ -315,7 +313,7 @@ export class EstateObjectsService {
   }
 
   async updateObject(req: any, updateEstateObjectDto: UpdateEstateObjectDto) {
-    console.log(updateEstateObjectDto);
+    // console.log(updateEstateObjectDto);
     const {
       email,
       id,
@@ -331,17 +329,17 @@ export class EstateObjectsService {
 
     const shortAddress =
       address.split(', ').at(-2) + ', ' + address.split(', ').at(-1);
-    console.log(shortAddress);
+    // console.log(shortAddress);
 
     const [chatRoom, created] = await ChatRoom.findOrCreate({
       where: { address: shortAddress },
     });
 
     if (!created) {
-      console.log('room exists');
+      // console.log('room exists');
     }
 
-    console.log(!!chatRoom);
+    // console.log(!!chatRoom);
 
     const object = await EstateObject.findOne({
       where: {
@@ -368,7 +366,7 @@ export class EstateObjectsService {
       });
     }
 
-    // console.log(object);
+    // // console.log(object);
 
     if (!object) {
       throw new HttpException('Что-то пошло не так', StatusCodes.BAD_REQUEST, {
@@ -386,7 +384,7 @@ export class EstateObjectsService {
     });
 
     if (!!objectRight) {
-      console.log('objectright exists');
+      // console.log('objectright exists');
     }
 
     await objectRight.update({
@@ -394,7 +392,7 @@ export class EstateObjectsService {
       account: account,
     });
 
-    // console.log(objectRight);
+    // // console.log(objectRight);
 
     await this.deleteUnauthorizedChatsAccess(user.id);
 
@@ -426,16 +424,6 @@ export class EstateObjectsService {
       const account = '0';
       const isOwner = false;
 
-      console.log({
-        email,
-        address,
-        latitude: latutide,
-        longitude,
-        apartment,
-        account,
-        isOwner,
-      });
-
       await application.destroy();
 
       await this.createObject({
@@ -450,7 +438,7 @@ export class EstateObjectsService {
 
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 }

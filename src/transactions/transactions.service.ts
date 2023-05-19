@@ -5,19 +5,17 @@ import {
   TransactionTypes,
 } from './dto/create-transaction.dto';
 
-import { Transaction } from './entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
+import { Transaction } from './entities/transaction.entity';
 
 import * as jwt from 'jsonwebtoken';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
 
 @Injectable()
 export class TransactionsService {
   async createTransaction(createTransactionDto: CreateTransactionDto) {
-    const { userId, objectId, basis, sum } = createTransactionDto;
     try {
-      console.log(createTransactionDto);
-      const transaction = await Transaction.create(createTransactionDto);
+      // console.log(createTransactionDto);
+      await Transaction.create(createTransactionDto);
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
       throw new HttpException('Ошибка', StatusCodes.BAD_REQUEST, {
@@ -48,7 +46,7 @@ export class TransactionsService {
 
       return transactions;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
       throw new HttpException('Ошибка', StatusCodes.BAD_REQUEST, {
         cause: new Error('some error'),
       });
@@ -71,11 +69,11 @@ export class TransactionsService {
 
       let sum = 0;
       transactions.forEach((item) => (sum += item.sum));
-      console.log('sum', sum);
+      // console.log('sum', sum);
 
       return sum;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
       throw new HttpException('Ошибка', StatusCodes.BAD_REQUEST, {
         cause: new Error('some error'),
       });

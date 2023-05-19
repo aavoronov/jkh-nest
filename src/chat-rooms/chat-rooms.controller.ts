@@ -1,18 +1,17 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   Query,
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ChatRoomsService } from './chat-rooms.service';
-import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
 import { RegisterWorkerObjectDto } from './dto/register-worker-object.dto';
+import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
 
 @ApiTags('chat-rooms')
 @Controller('chat-rooms')

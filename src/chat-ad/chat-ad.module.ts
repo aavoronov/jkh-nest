@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ChatAdService } from './chat-ad.service';
-import { ChatAdController } from './chat-ad.controller';
 import { TransactionsModule } from '../transactions/transactions.module';
+import { ChatAdController } from './chat-ad.controller';
+import { ChatAdService } from './chat-ad.service';
 
 @Module({
   controllers: [ChatAdController],

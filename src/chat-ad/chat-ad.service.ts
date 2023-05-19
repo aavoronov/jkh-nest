@@ -33,7 +33,7 @@ export class ChatAdService {
         chats,
         price,
       } = createChatAdDto;
-      console.log(createChatAdDto);
+      // console.log(createChatAdDto);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -41,7 +41,7 @@ export class ChatAdService {
         include: [{ model: WorkerProfile }],
       });
 
-      console.log(user.workerProfile.id);
+      // console.log(user.workerProfile.id);
 
       const chatsArray = chats.split(',').map((item) => +item);
 
@@ -64,7 +64,7 @@ export class ChatAdService {
 
       await mailerService.newChatAdApplication(newAd.id);
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
     // return 'This action adds a new chatAd';
   }
@@ -83,7 +83,7 @@ export class ChatAdService {
       });
       return myAds;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -103,7 +103,7 @@ export class ChatAdService {
         ],
       });
 
-      console.log(ad);
+      // console.log(ad);
 
       // const user = await User.findOne({
       //   where: { email: result.email },
@@ -116,7 +116,7 @@ export class ChatAdService {
 
       await ad.update({ isPaid: true });
 
-      console.log(ad.worker.user.id, ad.id);
+      // console.log(ad.worker.user.id, ad.id);
 
       await this.transactionsService.createTransaction({
         userId: ad.worker.user.id,
@@ -126,14 +126,14 @@ export class ChatAdService {
       });
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
   async approveChatAd(id: number) {
     // if token.role === 'admin'
     try {
-      console.log(id);
+      // console.log(id);
       const ad = await ChatAd.findOne({
         where: { id: id },
         include: [
@@ -146,7 +146,7 @@ export class ChatAdService {
 
       await ad.update({ isApproved: true });
 
-      // console.log(ad);
+      // // console.log(ad);
 
       const bodyEmail: IEmailChatAdApproval = {
         email: ad.worker.user.email,
@@ -155,7 +155,7 @@ export class ChatAdService {
       await mailerService.notifyOfChatAdApproval(bodyEmail);
       return 'ok';
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -180,10 +180,10 @@ export class ChatAdService {
         where: { workerId: user.workerProfile.id, id: id },
       });
       await ad.destroy();
-      console.log(ad);
+      // console.log(ad);
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 }

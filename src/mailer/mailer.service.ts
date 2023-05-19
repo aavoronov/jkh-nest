@@ -1,10 +1,9 @@
-import { Injectable, BadGatewayException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import {
   IEmailChatAdApproval,
   IEmailRegister,
   IEmailUpdatePassword,
 } from './interfaces/email.body';
-import { HttpException } from '@nestjs/common';
 
 import { createTransport } from 'nodemailer';
 
@@ -177,7 +176,7 @@ export class MailerService {
         html: output,
       };
 
-      console.log(this.user, this.pass, this.adminUrl);
+      // console.log(this.user, this.pass, this.adminUrl);
 
       await this.transporter.sendMail(mailOptions);
     } catch (e) {
@@ -200,7 +199,7 @@ export class MailerService {
         html: output,
       };
 
-      console.log('sent');
+      // console.log('sent');
 
       await this.transporter.sendMail(mailOptions);
     } catch (e) {
@@ -224,7 +223,7 @@ export class MailerService {
         html: output,
       };
 
-      console.log(this.user, this.pass, this.adminUrl);
+      // console.log(this.user, this.pass, this.adminUrl);
       await this.transporter.sendMail(mailOptions);
     } catch (e) {
       throw new HttpException(e.message, e.status, {

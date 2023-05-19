@@ -1,12 +1,12 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { ChatController } from './chat.controller';
-import { ChatService } from './chat.service';
-import { ChatGateway } from './chat.gateway';
 import { MulterModule } from '@nestjs/platform-express';
-import { AuthMiddleware } from '../utils/middleware/auth.middleware';
-import { AccessMiddleware } from '../utils/middleware/access.middleware';
-import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { ChatRoomsModule } from '../chat-rooms/chat-rooms.module';
+import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
+import { AccessMiddleware } from '../utils/middleware/access.middleware';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { ChatController } from './chat.controller';
+import { ChatGateway } from './chat.gateway';
+import { ChatService } from './chat.service';
 
 @Module({
   imports: [

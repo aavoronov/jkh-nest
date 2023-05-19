@@ -1,8 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { StatusCodes } from 'http-status-codes';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
-import { Account } from './entities/account.entity';
+import { HttpException, Injectable } from '@nestjs/common';
 import fetch from 'cross-fetch';
+import { StatusCodes } from 'http-status-codes';
+import { Account } from './entities/account.entity';
 
 interface ITokenRequest {
   workerId: number;
@@ -15,7 +14,7 @@ export class UtilitiesService {
     const res = await fetch(
       `${process.env.RIAS_URL}accounts?access-token=${token.token}&fields=id,number`,
     );
-    //   console.log(await res.json());
+    //   // console.log(await res.json());
     const accounts = await res.json();
     accounts.map((account: { id: number; number: number }) => {
       Account.findOrCreate({
@@ -36,7 +35,7 @@ export class UtilitiesService {
         tokens.map((item) => this.handleSingleToken(item));
       }
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   };
 
@@ -66,7 +65,7 @@ export class UtilitiesService {
       where: { accountNumber: acct },
       // include: [{ model: WorkerProfile, attributes: ['riasToken'] }],
     });
-    console.log(account);
+    // console.log(account);
     if (!account) {
       throw new HttpException(
         {
@@ -79,8 +78,8 @@ export class UtilitiesService {
         },
       );
     }
-    console.log(account.toJSON());
-    // console.log(account.worker.riasToken);
+    // console.log(account.toJSON());
+    // // console.log(account.worker.riasToken);
 
     // &fields=id,number
     const currentDate = new Date();
@@ -118,8 +117,8 @@ export class UtilitiesService {
     }
 
     return { sum: data[0].total_payable_by_pd_with_debt_and_advance };
-    // console.log(await res.json());
-    console.log(res);
+    // // console.log(await res.json());
+    // console.log(res);
     return `This action returns all utilities`;
   }
 

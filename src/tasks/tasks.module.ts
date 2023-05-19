@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ChatRoomsModule } from '../chat-rooms/chat-rooms.module';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
-import { ChatGateway } from '../chat/chat.gateway';
 import { ChatModule } from '../chat/chat.module';
-import { ChatService } from '../chat/chat.service';
 import { UtilitiesModule } from '../utilities/utilities.module';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { TasksService } from './tasks.service';

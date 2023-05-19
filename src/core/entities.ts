@@ -1,16 +1,22 @@
 import { ComponentLoader } from 'adminjs';
+import { ChatAdService } from '../chat-ad/chat-ad.service';
 import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
+import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
 import { Message } from '../chat/entities/message.entity';
 import { Complaint } from '../complaints/entities/complaint.entity';
 import { EstateObjectRights } from '../estate-objects/entities/estate-object-rights.entity';
 import { EstateObject } from '../estate-objects/entities/estate-object.entity';
+import { EstateObjectsService } from '../estate-objects/estate-objects.service';
 import { GenericData } from '../generic-data/entities/generic-data.entity';
 import { MapObjectDetails } from '../map-objects/entities/map-object-details.entity';
 import { MapObjectReply } from '../map-objects/entities/map-object-reply.entity';
 import { MapObjectReview } from '../map-objects/entities/map-object-review.entity';
 import { MapObject } from '../map-objects/entities/map-object.entity';
+import { PollOption } from '../polls/entities/poll-options.entity';
+import { PollReply } from '../polls/entities/poll-reply.entity';
+import { Poll } from '../polls/entities/poll.entity';
 import { ServiceCategory } from '../services/entities/service-category.entity';
 import { ServiceReview } from '../services/entities/service-review';
 import { ServiceSubcategory } from '../services/entities/service-subcategory.entity';
@@ -20,21 +26,14 @@ import { TradingPlatformFavorites } from '../trading-platform/entities/trading-p
 import { TradingPlatformProduct } from '../trading-platform/entities/trading-platform-product.entity';
 import { TradingPlatformSubcategory } from '../trading-platform/entities/trading-platform-subcategory.entity';
 import { Transaction } from '../transactions/entities/transaction.entity';
+import { TransactionsService } from '../transactions/transactions.service';
 import { Profile } from '../users/entities/profile.entity';
 import { User } from '../users/entities/user.entity';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
 import { UsersService } from '../users/users.service';
 import { Account } from '../utilities/entities/account.entity';
-import { Verifications } from '../verifications/entities/verification.entity';
-import { ChatAdService } from '../chat-ad/chat-ad.service';
-import { TransactionsService } from '../transactions/transactions.service';
-import { NewWorkerObjectApplication } from '../chat-rooms/entities/worker-object-application.entity';
-import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
-import { EstateObjectsService } from '../estate-objects/estate-objects.service';
-import { Poll } from '../polls/entities/poll.entity';
-import { PollOption } from '../polls/entities/poll-options.entity';
-import { PollReply } from '../polls/entities/poll-reply.entity';
 import { PhoneVerifications } from '../verifications/entities/phone-verification.entity';
+import { Verifications } from '../verifications/entities/verification.entity';
 
 export const entities = [
   User,
@@ -207,7 +206,7 @@ const deleteMapObjectWithItsDetails = async (id: number) => {
     where: { objectType: 'map object', objectId: id },
   });
 
-  console.log(record);
+  // console.log(record);
 };
 
 // const deleteMapObjectWithItsDetails = {
@@ -253,7 +252,7 @@ const WorkerProfileResource = {
         component: false,
         // handler: (request, response, context) => {
         //   const { record, currentAdmin } = context;
-        //   console.log(record);
+        //   // console.log(record);
         //   // approveWorker(record.id);
         //   return {
         //     record: record.toJSON(currentAdmin),
@@ -262,7 +261,7 @@ const WorkerProfileResource = {
         // },
         handler: async (request, response, context) => {
           const { record, currentAdmin } = context;
-          console.log('record', record);
+          // console.log('record', record);
           await approveWorker(record.params.userId);
           return {
             record: record.toJSON(currentAdmin),
@@ -346,7 +345,7 @@ const MapObjectResource = {
         handler: async (request, response, context) => {
           const { record, currentAdmin } = context;
 
-          // console.log(record.params.id);
+          // // console.log(record.params.id);
           await deleteMapObjectWithItsDetails(record.params.id);
           return {
             record: record.toJSON(currentAdmin),
@@ -374,7 +373,7 @@ const MapObjectDetailsResource = {
         handler: async (request, response, context) => {
           const { record, currentAdmin } = context;
 
-          // console.log(record);
+          // // console.log(record);
           await deleteMapObjectWithItsDetails(record.params.objectId);
           return {
             record: record.toJSON(currentAdmin),
@@ -397,7 +396,7 @@ const ChatAdResource = {
         component: false,
         handler: async (request, response, context) => {
           const { record, currentAdmin } = context;
-          console.log('record', record);
+          // console.log('record', record);
           await approveChatAd(record.params.id);
           return {
             record: record.toJSON(currentAdmin),
@@ -419,7 +418,7 @@ const NewWorkerObjectApplicationResource = {
         component: false,
         handler: async (request, response, context) => {
           const { record, currentAdmin } = context;
-          console.log('record', record);
+          // console.log('record', record);
           await approveWorkerObjectApplication(record.params.id);
           return {
             record: record.toJSON(currentAdmin),

@@ -1,4 +1,3 @@
-import { User } from '../../users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   BelongsTo,
@@ -9,8 +8,9 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { ServiceSubcategory } from './service-subcategory.entity';
+import { User } from '../../users/entities/user.entity';
 import { ServiceReview } from './service-review';
+import { ServiceSubcategory } from './service-subcategory.entity';
 
 @Table
 export class Service extends Model<Service> {

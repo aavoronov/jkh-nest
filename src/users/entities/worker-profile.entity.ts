@@ -1,22 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasOne,
-  HasMany,
   BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
+  HasMany,
+  Model,
+  Table,
 } from 'sequelize-typescript';
-import { Verifications } from '../../verifications/entities/verification.entity';
-import { Profile } from './profile.entity';
-import { ApiProperty } from '@nestjs/swagger';
-import { Message } from '../../chat/entities/message.entity';
-import { EstateObjectRights } from '../../estate-objects/entities/estate-object-rights.entity';
-import { TradingPlatformFavorites } from '../../trading-platform/entities/trading-platform-favorites.entity';
-import { User } from './user.entity';
-import { Account } from '../../utilities/entities/account.entity';
 import { NewWorkerObjectApplication } from '../../chat-rooms/entities/worker-object-application.entity';
+import { Account } from '../../utilities/entities/account.entity';
+import { User } from './user.entity';
 
 @Table
 export class WorkerProfile extends Model<WorkerProfile> {

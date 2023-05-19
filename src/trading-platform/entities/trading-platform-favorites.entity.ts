@@ -1,5 +1,5 @@
-import { User } from '../../users/entities/user.entity';
 import { BelongsTo, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { User } from '../../users/entities/user.entity';
 import { TradingPlatformProduct } from './trading-platform-product.entity';
 
 @Table

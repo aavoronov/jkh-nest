@@ -1,11 +1,10 @@
-import React from 'react';
-import { Box, H3, Label } from '@adminjs/design-system';
-import { ActionProps } from 'adminjs';
+import { Box, Label } from '@adminjs/design-system';
 import { ShowPropertyProps } from 'adminjs/types/src';
+import React from 'react';
 
 const mapObjectDetailsLink = (props: ShowPropertyProps) => {
   const { record, property } = props;
-  console.log(record);
+  // console.log(record);
   return (
     <Box mb="xl">
       <Label style={{ color: '#898A9A', marginBottom: 4 }}>

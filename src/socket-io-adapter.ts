@@ -16,7 +16,7 @@ export class SocketIOAdapter extends IoAdapter {
     const cors = {
       origin: [`${process.env.CLIENT_URL}`],
     };
-    // console.log(`${process.env.CLIENT_URL}:${process.env.CLIENT_PORT}`);
+    // // console.log(`${process.env.CLIENT_URL}:${process.env.CLIENT_PORT}`);
 
     const optionsWithCORS: ServerOptions = {
       ...options,

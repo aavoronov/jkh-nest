@@ -1,23 +1,20 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import {
-  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  WebSocketGateway,
+  OnGatewayInit,
   SubscribeMessage,
+  WebSocketGateway,
 } from '@nestjs/websockets';
 import { MessageBody, WebSocketServer } from '@nestjs/websockets/decorators';
 import { writeFile } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import { Base64 } from 'js-base64';
-import { Namespace, Server, Socket } from 'socket.io';
-import { fileURLToPath } from 'url';
+import { Namespace, Socket } from 'socket.io';
 import { ChatRoomsService } from '../chat-rooms/chat-rooms.service';
 import { User } from '../users/entities/user.entity';
-import { ChatService } from './chat.service';
 import { Message } from './entities/message.entity';
 import { IMessageBody } from './interfaces/interface';
-import { instrument } from '@socket.io/admin-ui';
 
 @WebSocketGateway({ namespace: 'chat' })
 @Injectable()
@@ -33,7 +30,7 @@ export class ChatGateway
   // @WebSocketServer() io: Server;
 
   afterInit() {
-    console.log('initialized');
+    // // console.log('initialized');
     // instrument(this.io, {
     //   auth: false,
     //   mode: 'development',
@@ -42,28 +39,28 @@ export class ChatGateway
 
   handleConnection(client: Socket): void {
     const sockets = this.io.sockets;
-    console.log('c');
-    console.log(sockets.size);
+    // // console.log('c');
+    // // console.log(sockets.size);
     client.emit('newConnection', 'all except');
   }
 
   handleDisconnect(): void {
     const sockets = this.io.sockets;
-    console.log('dc');
-    console.log(sockets.size);
+    // // console.log('dc');
+    // // console.log(sockets.size);
   }
 
   @SubscribeMessage('joinRoom')
   handleRoomJoin(client: Socket, room: string[]): void {
     client.join(room);
-    console.log(client.rooms);
+    // // console.log(client.rooms);
   }
 
   @SubscribeMessage('ping')
   handlePing(client: Socket, args: any[]): void {
-    console.log(args);
+    // // console.log(args);
     const [email, chat] = args;
-    console.log('ping!', email, chat);
+    // // console.log('ping!', email, chat);
     this.chatRoomsService.createTimeRecord(email, chat);
   }
 
@@ -73,19 +70,19 @@ export class ChatGateway
     // @MessageBody() file: any,
   ): Promise<void> {
     // @MessageBody() message: IMessageBody
-    console.log(message);
-    console.log(typeof message.file);
+    // // console.log(message);
+    // // console.log(typeof message.file);
 
     //! --------------------------------------------- //
     // try {
-    console.log(message);
+    // // console.log(message);
     // const { sender, message, filename, roomId } = message;
 
     const user = await User.findOne({
       where: { email: message.email },
       attributes: ['id'],
     });
-    console.log(user.id);
+    // // console.log(user.id);
 
     let dbFileName = null;
 
@@ -102,7 +99,7 @@ export class ChatGateway
       const myBuffer = Buffer.from(message.file, 'base64');
 
       writeFile(`./uploads/chat/${dbFileName}`, myBuffer, (err) => {
-        console.log(err);
+        // // console.log(err);
       });
     }
 
@@ -118,9 +115,9 @@ export class ChatGateway
         cause: new Error('Some Error'),
       });
     }
-    console.log('ok');
+    // console.log('ok');
     // } catch (e) {
-    // console.log(e);
+    // // console.log(e);
     // throw new HttpException(e.message, e.status, {
     //   cause: new Error('Some Error'),
     // });
@@ -134,14 +131,14 @@ export class ChatGateway
     //         const fileName = Base64.encodeURI(
     //           (Math.random() * 1000).toString() + Date.now(),
     //         );
-    //         console.log(file);
+    //         // console.log(file);
     //         const dbFileName =
     //           fileName +
     //           file.originalname.slice(file.originalname.lastIndexOf('.'));
     //         req.body.filename = dbFileName;
     //         cb(null, `${dbFileName}`);
     //       } catch (e) {
-    //         console.log(e);
+    //         // console.log(e);
     //       }
     //     },
     //   }),
@@ -150,7 +147,7 @@ export class ChatGateway
     //! --------------------------------------------- //
 
     // const time = new Date();
-    // console.log(time);
+    // // console.log(time);
 
     // const file = !!message.file
     //   ? `data:image/${message.filename.slice(
@@ -158,7 +155,7 @@ export class ChatGateway
     //     )};base64,${message.file.toString('base64')}`
     //   : '';
     const file = !!message.file ? dbFileName : '';
-    console.log(file);
+    // console.log(file);
     const payload = {
       // email: message.email,
       message: message.text,
@@ -170,24 +167,24 @@ export class ChatGateway
       roomId: message.roomId,
     };
 
-    console.log('emits');
+    // console.log('emits');
     this.io.to(message.roomId).emit('message', payload);
   }
 
   // socket.on('room', data => {
-  //   console.log('room join');
-  //   console.log(data);
+  //   // console.log('room join');
+  //   // console.log(data);
   //   socket.join(data.room);
   // });
 
   // socket.on('leave room', data => {
-  //   console.log('leaving room');
-  //   console.log(data);
+  //   // console.log('leaving room');
+  //   // console.log(data);
   //   socket.leave(data.room)
   // });
 
   // socket.on('new message', data => {
-  //   console.log(data.room);
+  //   // console.log(data.room);
   //   socket.broadcast
   //   .to(data.room)
   //   .emit('receive message', data)

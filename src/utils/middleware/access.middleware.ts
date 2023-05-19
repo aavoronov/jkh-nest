@@ -21,7 +21,7 @@ export class AccessMiddleware implements NestMiddleware {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    console.log(req.body.access);
+    // console.log(req.body.access);
     const send = {
       status: StatusCodes.UNAUTHORIZED,
       message: 'UNAUTHORIZED',

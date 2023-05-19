@@ -1,6 +1,5 @@
+import { ShowPropertyProps } from 'adminjs';
 import React from 'react';
-import { Box, H3 } from '@adminjs/design-system';
-import { ActionProps, ShowPropertyProps } from 'adminjs';
 
 const Color: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
   const { record, property } = props;

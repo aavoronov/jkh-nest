@@ -1,35 +1,34 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import {
-  CreateUserByEmailDto,
-  CreateUserByPhoneDto,
-} from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ProfileDto } from './dto/profile.dto';
-import { User } from './entities/user.entity';
-import { Profile } from './entities/profile.entity';
+import { Injectable } from '@nestjs/common';
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import * as bcrypt from 'bcrypt';
-import { CheckPassword } from './interfaces/user.interface';
-import { checkEmail, checkPhone, maskPhone } from '../utils/functions';
-import { Verifications } from '../verifications/entities/verification.entity';
-import { UserDto } from './dto/user.dto';
+import * as Color from 'color';
+import fetch from 'cross-fetch';
+import { writeFile } from 'fs';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { Base64 } from 'js-base64';
 import * as jwt from 'jsonwebtoken';
-import { MailerService } from '../mailer/mailer.service';
+import { Op } from 'sequelize';
 import {
   IEmailRegister,
   IEmailUpdatePassword,
 } from '../mailer/interfaces/email.body';
-import { RestorePasswordDto } from './dto/restore.dto';
-import * as Color from 'color';
-import { UpdateEmailDto } from './dto/update-email.dto';
-import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
-import { WorkerProfile } from './entities/worker-profile.entity';
-import { Op } from 'sequelize';
-import { Base64 } from 'js-base64';
-import { writeFile } from 'fs';
+import { MailerService } from '../mailer/mailer.service';
+import { checkEmail, checkPhone } from '../utils/functions';
 import { PhoneVerifications } from '../verifications/entities/phone-verification.entity';
-import fetch from 'cross-fetch';
+import { Verifications } from '../verifications/entities/verification.entity';
+import {
+  CreateUserByEmailDto,
+  CreateUserByPhoneDto,
+} from './dto/create-user.dto';
+import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
+import { RestorePasswordDto } from './dto/restore.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+import { Profile } from './entities/profile.entity';
+import { User } from './entities/user.entity';
+import { WorkerProfile } from './entities/worker-profile.entity';
+import { CheckPassword } from './interfaces/user.interface';
 
 const length = 8;
 const numbers = /[0-9]/g;
@@ -42,7 +41,7 @@ const mailerService = new MailerService();
 export class UsersService {
   private async uploadFile(file: Express.Multer.File): Promise<string> {
     try {
-      // console.log(file);
+      // // console.log(file);
 
       const fileName = Base64.encodeURI(
         (Math.random() * 1000).toString() + Date.now(),
@@ -53,12 +52,12 @@ export class UsersService {
       const buffer = file.buffer;
 
       writeFile(`./uploads/workers/${dbFileName}`, buffer, (err) => {
-        console.log(err);
+        // console.log(err);
       });
 
       return dbFileName;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -201,7 +200,7 @@ export class UsersService {
 
   async authorizeByEmail(userData: UserDto) {
     const { email, password } = userData;
-    // console.log(email, password);
+    // // console.log(email, password);
 
     try {
       if (!email)
@@ -274,7 +273,7 @@ export class UsersService {
             cause: new Error('Some Error'),
           },
         );
-        // console.log('verification exists');
+        // // console.log('verification exists');
       }
 
       if (user.role === 'admin') {
@@ -340,9 +339,9 @@ export class UsersService {
 
       // if (!existingUser) {
       //   this.signUpByPhone({ phone: phone });
-      //   console.log('created');
+      //   // console.log('created');
       // } else {
-      //   console.log('existed');
+      //   // console.log('existed');
       // }
 
       if (!existingUser) {
@@ -377,7 +376,7 @@ export class UsersService {
         .toString()
         .padStart(4, '0');
 
-      console.log('otp', otp);
+      // console.log('otp', otp);
 
       const verification = await PhoneVerifications.create({
         userId: user.id,
@@ -387,14 +386,14 @@ export class UsersService {
       const fetchData = async () => {
         const res = await fetch(
           `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/auth`,
-          // `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=${verification.otp}&sign=SMS Aero`,
+          // `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=ЖКХ+Консьерж+-+код+авторизации+${verification.otp}&sign=SMS Aero`,
         );
         return res;
       };
 
       const status = (await fetchData()).status;
 
-      console.log('status', status);
+      // console.log('status', status);
 
       if (status !== 200) {
         throw new HttpException('Ошибка SMS-сервиса', StatusCodes.BAD_GATEWAY, {
@@ -405,15 +404,15 @@ export class UsersService {
       return { otp: verification.otp };
 
       // fetch(
-      //   `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=${verification.otp}&sign=SMS Aero`,
+      //   `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=ЖКХ+Консьерж+-+код+авторизации+${verification.otp}&sign=SMS Aero`,
       // ).then(
       //   (res) => {
       //     return { otp: verification.otp };
       //   },
-      //   (error) => console.log('error', error),
+      //   (error) =>  console.log('error', error),
       // );
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
@@ -421,9 +420,9 @@ export class UsersService {
   }
 
   async authorizeByPhone(body: { phone: string; otp: string }) {
-    // console.log(email, password);
+    // // console.log(email, password);
     const { phone, otp } = body;
-    console.log(phone);
+    // console.log(phone);
 
     try {
       // let passwordMatches = false;
@@ -501,7 +500,7 @@ export class UsersService {
         );
       }
 
-      // console.log('otp', verification.otp);
+      // // console.log('otp', verification.otp);
 
       if (otp && otp !== verification.otp) {
         throw new HttpException('Неверный код доступа', StatusCodes.FORBIDDEN, {
@@ -514,7 +513,7 @@ export class UsersService {
       });
 
       const fieldsRequired = !user.email || !user.password;
-      console.log('fieldsRequired', fieldsRequired);
+      // console.log('fieldsRequired', fieldsRequired);
 
       return {
         status: StatusCodes.OK,
@@ -548,7 +547,7 @@ export class UsersService {
 
       {
         await Verifications.destroy({ where: { userId: user.userId } });
-        console.log(user.id);
+        // console.log(user.id);
         // return {
         //   status: StatusCodes.OK,
         //   message: ReasonPhrases.OK,
@@ -640,14 +639,14 @@ export class UsersService {
       //         cause: new Error('Some Error'),
       //       });
       //     }
-      //     console.log(decoded);
+      //     // console.log(decoded);
       //     // return decoded;
       //     // return { email: decoded.email };
       //   },
       // );
       const result = await jwt.verify(token, process.env.JWT);
 
-      console.log(result);
+      // console.log(result);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -668,7 +667,7 @@ export class UsersService {
         );
       }
       return { email: result.email, phone: result.phone, role: result.role };
-      // console.log(result);
+      // // console.log(result);
     } catch (e) {
       throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
         cause: new Error('Some Error'),
@@ -680,7 +679,7 @@ export class UsersService {
     try {
       const token = await req.headers.authorization;
       const result = await jwt.verify(token, process.env.JWT);
-      console.log(result);
+      // console.log(result);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -711,7 +710,7 @@ export class UsersService {
         });
       }
       // userProfile.profile.email = result.email;
-      // console.log(userProfile);
+      // // console.log(userProfile);
       return result.role === 'user' ? userProfile.profile : userProfile;
     } catch (e) {
       throw new HttpException(e.message, StatusCodes.FORBIDDEN, {
@@ -722,7 +721,7 @@ export class UsersService {
 
   async update(req: any, updateData: UpdateUserDto) {
     try {
-      console.log(updateData);
+      // console.log(updateData);
       const token = await req.headers.authorization;
 
       const result = await jwt.verify(token, process.env.JWT);
@@ -737,7 +736,7 @@ export class UsersService {
       }
       const user = await User.findOne({ where: { email: result.email } });
 
-      console.log(result);
+      // console.log(result);
 
       if (!!updateData.newPassword) {
         if (!!user.password) {
@@ -798,10 +797,10 @@ export class UsersService {
   async updateEmail(req: any, updateData: UpdateEmailDto) {
     try {
       const token = await req.headers.authorization;
-      console.log(token);
+      // console.log(token);
 
       const result = await jwt.verify(token, process.env.JWT);
-      console.log(updateData);
+      // console.log(updateData);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -813,7 +812,7 @@ export class UsersService {
       }
       const user = await User.findOne({ where: { email: result.email } });
 
-      // console.log('user', user);
+      // // console.log('user', user);
 
       const passwordIsValid = UsersService.validPassword(
         updateData.password,
@@ -830,7 +829,7 @@ export class UsersService {
       }
 
       if (!checkEmail(updateData.email).correct) {
-        console.log('incorrect');
+        // console.log('incorrect');
         throw new HttpException(
           'Вы некорректно ввели адрес электронной почты',
           StatusCodes.CONFLICT,
@@ -881,10 +880,10 @@ export class UsersService {
   async updatePhone(req: any, updateData: { phone: string; password: string }) {
     try {
       const token = await req.headers.authorization;
-      console.log(token);
+      // console.log(token);
 
       const result = await jwt.verify(token, process.env.JWT);
-      console.log(updateData);
+      // console.log(updateData);
       if (!!result.message) {
         throw new HttpException(
           'Сессия истекла или недействительна',
@@ -896,7 +895,7 @@ export class UsersService {
       }
       const user = await User.findOne({ where: { email: result.email } });
 
-      // console.log('user', user);
+      // // console.log('user', user);
 
       const passwordIsValid = UsersService.validPassword(
         updateData.password,
@@ -913,7 +912,7 @@ export class UsersService {
       }
 
       if (!checkPhone(updateData.phone).correct) {
-        console.log('incorrect');
+        // console.log('incorrect');
         throw new HttpException(
           'Некорректный формат номера телефона',
           StatusCodes.CONFLICT,
@@ -971,7 +970,7 @@ export class UsersService {
         );
       }
 
-      console.log(result.email);
+      // console.log(result.email);
       const user = await User.findOne({ where: { email: result.email } });
       await user.update({ isDeleted: true });
 
@@ -1165,7 +1164,7 @@ export class UsersService {
   async approveWorkerOrResetTheirPassword(id: number) {
     // if token.role === 'admin'
     try {
-      console.log(id);
+      // console.log(id);
       const worker = await User.findOne({
         where: { id },
         include: { model: WorkerProfile, as: 'workerProfile' },
@@ -1175,7 +1174,7 @@ export class UsersService {
       const randomPassword = Math.random().toString(36).slice(-10);
       const randomPasswordCrypt = bcrypt.hashSync(randomPassword, salt);
 
-      console.log(randomPassword);
+      // console.log(randomPassword);
 
       await worker.update({ password: randomPasswordCrypt });
       await WorkerProfile.update(
@@ -1190,7 +1189,7 @@ export class UsersService {
       await mailerService.approvedWorkerCredentialsEmail(bodyEmail);
       return 'ok';
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 }

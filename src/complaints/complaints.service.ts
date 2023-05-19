@@ -15,7 +15,7 @@ export class ComplaintsService {
       const user = await User.findOne({
         where: { email: result.email },
       });
-      console.log(createComplaintDto);
+      // console.log(createComplaintDto);
       const { type, reason, text, objectId } = createComplaintDto;
       const data = {
         objectType: type,
@@ -28,13 +28,13 @@ export class ComplaintsService {
       const complaint = await Complaint.create(data);
       return { status: 201, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_GATEWAY, {
         cause: new Error('Some Error'),
       });
     }
     // const complaint = await Complaint.create(createComplaintDto);
-    // console.log(complaint);
+    // // console.log(complaint);
 
     return 'This action adds a new complaint';
   }

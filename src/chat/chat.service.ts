@@ -1,29 +1,21 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { User } from '../users/entities/user.entity';
-import { Message } from './entities/message.entity';
-import {
-  IGetMessages,
-  IMessage,
-  IRequestMessage,
-} from './interfaces/interface';
-import { StatusCodes } from 'http-status-codes';
-import { Profile } from '../users/entities/profile.entity';
-import { readFile, writeFile } from 'fs';
-import { Express } from 'express';
-import { Base64 } from 'js-base64';
-import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
-import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
-import { Op, Sequelize } from 'sequelize';
 import * as async from 'async';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
-import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
+import { StatusCodes } from 'http-status-codes';
 import * as jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
+import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
+import { RoomAccess } from '../chat-rooms/entities/room-access.entity';
+import { Profile } from '../users/entities/profile.entity';
+import { User } from '../users/entities/user.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { Message } from './entities/message.entity';
+import { IRequestMessage } from './interfaces/interface';
 
 @Injectable()
 export class ChatService {
   async createMessage(payload: any): Promise<void> {
     try {
-      console.log(payload);
+      // console.log(payload);
       const { sender, message, filename, roomId } = payload;
 
       //   const permissions = await ChatPermissions.findAll({
@@ -35,7 +27,7 @@ export class ChatService {
         where: { email: sender },
         attributes: ['id'],
       });
-      console.log(user.id);
+      // console.log(user.id);
       const newMessage = await Message.create({
         // chat: room,
         userId: user.id,
@@ -56,9 +48,9 @@ export class ChatService {
           cause: new Error('Some Error'),
         });
       }
-      console.log('ok');
+      // console.log('ok');
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });
@@ -116,7 +108,7 @@ export class ChatService {
 
       const rooms = access.map((item) => item.roomId);
 
-      console.log(rooms);
+      // console.log(rooms);
 
       const results = await async.map(rooms, getMessagesPerRoom);
 
@@ -140,7 +132,7 @@ export class ChatService {
       };
     } catch (e) {
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
-      // console.log(e);
+      // // console.log(e);
     }
   }
 
@@ -198,7 +190,7 @@ export class ChatService {
 
       const rooms = access.map((item) => item.roomId);
 
-      console.log(rooms);
+      // console.log(rooms);
 
       if (!rooms.includes(parseInt(chat))) {
         throw new HttpException(
@@ -232,7 +224,7 @@ export class ChatService {
       };
     } catch (e) {
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
-      // console.log(e);
+      // // console.log(e);
     }
   }
 
@@ -289,7 +281,7 @@ export class ChatService {
       // item = { ...item, file: this.getFile(item.file) };
       // }
       // });
-      console.log(query);
+      // console.log(query);
 
       return {
         status: StatusCodes.OK,
@@ -348,8 +340,8 @@ export class ChatService {
       // item = { ...item, file: this.getFile(item.file) };
       // }
       // });
-      // console.log(date);
-      // console.log(result);
+      // // console.log(date);
+      // // console.log(result);
 
       return {
         status: StatusCodes.OK,
@@ -386,11 +378,11 @@ export class ChatService {
         return { roomId: item.roomId, updatedAt: item.updatedAt };
       });
 
-      console.log(rooms);
+      // console.log(rooms);
 
       const results = await async.map(rooms, getMessagesPerRoom);
 
-      console.log(results);
+      // console.log(results);
 
       return {
         status: StatusCodes.OK,
@@ -399,7 +391,7 @@ export class ChatService {
         // data: msgs,
       };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
     }
   }

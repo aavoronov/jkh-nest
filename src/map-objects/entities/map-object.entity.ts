@@ -3,10 +3,10 @@ import {
   Column,
   DataType,
   ForeignKey,
-  Table,
-  Model,
-  HasOne,
   HasMany,
+  HasOne,
+  Model,
+  Table,
 } from 'sequelize-typescript';
 import { User } from '../../users/entities/user.entity';
 import { MapObjectDetails } from './map-object-details.entity';

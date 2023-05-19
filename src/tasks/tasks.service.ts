@@ -1,13 +1,11 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Cron, Interval, Timeout } from '@nestjs/schedule';
-import { Op, Sequelize } from 'sequelize';
-import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
-import { Account } from '../utilities/entities/account.entity';
-import { UtilitiesService } from '../utilities/utilities.service';
-import { IMessageBody } from '../chat/interfaces/interface';
-import { Message } from '../chat/entities/message.entity';
+import { Cron, Timeout } from '@nestjs/schedule';
 import { StatusCodes } from 'http-status-codes';
+import { Sequelize } from 'sequelize';
+import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
+import { Message } from '../chat/entities/message.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { UtilitiesService } from '../utilities/utilities.service';
 
 import { ChatGateway } from '../chat/chat.gateway';
 import { User } from '../users/entities/user.entity';
@@ -40,7 +38,7 @@ export class TasksService {
 
     const adsToFire = await ChatAd.findAll({
       where: Sequelize.literal(
-        `"ChatAd"."isApproved" = true AND "ChatAd"."isPaid" = true AND "ChatAd"."time" BETWEEN current_time + (INTERVAL '10520 SECONDS') AND current_time  + (INTERVAL '10810 SECONDS')`,
+        `"ChatAd"."isApproved" = true AND "ChatAd"."isPaid" = true AND "ChatAd"."displaysLeft" > 0 AND "ChatAd"."time" BETWEEN current_time + (INTERVAL '10520 SECONDS') AND current_time  + (INTERVAL '10810 SECONDS')`,
       ),
       include: [{ model: WorkerProfile }],
 
@@ -49,7 +47,7 @@ export class TasksService {
       // },
     });
 
-    console.log(adsToFire);
+    // console.log(adsToFire);
 
     const sendMessageForOneAd = async (ad: ChatAd) => {
       // const body: IMessageBody = {
@@ -99,22 +97,24 @@ export class TasksService {
         // this.chatGateway.io.in(stringChats[0]).emit('message', payload);
         // this.chatGateway.io.to(['1', '2']).emit('message', payload);
         this.chatGateway.io.emit('message', payload);
-        console.log('emits');
-        // console.log(this.chatGateway.io);
+        // console.log('emits');
+        // // console.log(this.chatGateway.io);
         // const sockets = this.chatGateway.io.sockets;
         // const rooms = this.chatGateway.io.adapter.rooms;
         // const sids = this.chatGateway.io.adapter.sids;
 
-        // console.log(sockets.size);
-        // console.log(rooms);
-        // console.log(sids);
+        // // console.log(sockets.size);
+        // // console.log(rooms);
+        // // console.log(sids);
       } catch (e) {
-        console.log(e);
+        // console.log(e);
       }
 
       // const io =
 
       Promise.all(ad.chats.map(createDbMessageForOneRoom)).then();
+
+      await ad.update({ displaysLeft: ad.displaysLeft - 1 });
 
       // this.io.to(ad.chats).emit('message', payload);
     };

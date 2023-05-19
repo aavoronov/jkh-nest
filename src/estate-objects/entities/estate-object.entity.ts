@@ -1,19 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasOne,
-  HasMany,
   BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
+  HasMany,
+  Model,
+  Table,
 } from 'sequelize-typescript';
 // import { Profile } from './profile.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Message } from '../../chat/entities/message.entity';
-import { Profile } from '../../users/entities/profile.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
-import { User } from '../../users/entities/user.entity';
 import { EstateObjectRights } from './estate-object-rights.entity';
 
 @Table

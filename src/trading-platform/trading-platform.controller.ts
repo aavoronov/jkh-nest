@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Req,
-  UseInterceptors,
-  UploadedFiles,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  Req,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { TradingPlatformService } from './trading-platform.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateTradingPlatformProductDto } from './dto/create-trading-platform-product.dto';
 import { UpdateTradingPlatformProductDto } from './dto/update-trading-platform-product.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { TradingPlatformService } from './trading-platform.service';
 
 import { ApiTags } from '@nestjs/swagger';
 
@@ -106,7 +106,7 @@ export class TradingPlatformController {
     @Body() updateTradingPlatformProductDto: UpdateTradingPlatformProductDto,
     @Param('id') id: string,
   ) {
-    console.log(files);
+    // console.log(files);
     return this.tradingPlatformService.updateProduct(
       files,
       req,

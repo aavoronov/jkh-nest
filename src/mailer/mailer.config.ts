@@ -1,6 +1,6 @@
 export class MailerConfig {
   createMailerOptions() {
-    console.log(process.env.MAIL_USER); // should have value
+    // console.log(process.env.MAIL_USER); // should have value
     return {
       transport: {
         service: 'Gmail',

@@ -1,27 +1,20 @@
-import {
-  HttpException,
-  Inject,
-  Injectable,
-  UploadedFiles,
-} from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { writeFile } from 'fs';
+import { StatusCodes } from 'http-status-codes';
+import { Base64 } from 'js-base64';
+import * as jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { TransactionTypes } from '../transactions/dto/create-transaction.dto';
+import { TransactionsService } from '../transactions/transactions.service';
+import { Profile } from '../users/entities/profile.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateTradingPlatformProductDto } from './dto/create-trading-platform-product.dto';
 import { UpdateTradingPlatformProductDto } from './dto/update-trading-platform-product.dto';
 import { TradingPlatformCategory } from './entities/trading-platform-category.entity';
+import { TradingPlatformFavorites } from './entities/trading-platform-favorites.entity';
 import { TradingPlatformProduct } from './entities/trading-platform-product.entity';
 import { TradingPlatformSubcategory } from './entities/trading-platform-subcategory.entity';
-import * as jwt from 'jsonwebtoken';
-import { User } from '../users/entities/user.entity';
-import { Base64 } from 'js-base64';
-import { writeFile } from 'fs';
-import * as multer from 'multer';
-import { StatusCodes } from 'http-status-codes';
-import { Op } from 'sequelize';
-import { TradingPlatformFavorites } from './entities/trading-platform-favorites.entity';
-import { Sequelize } from 'sequelize-typescript';
-import { TransactionsService } from '../transactions/transactions.service';
-import { TransactionTypes } from '../transactions/dto/create-transaction.dto';
-import { Transaction } from '../transactions/entities/transaction.entity';
-import { Profile } from '../users/entities/profile.entity';
 
 @Injectable()
 export class TradingPlatformService {
@@ -30,12 +23,12 @@ export class TradingPlatformService {
     files: Array<Express.Multer.File>,
   ): Promise<string[]> {
     try {
-      // console.log(files);
+      // // console.log(files);
       const filenames = [];
 
       files.forEach((item: Express.Multer.File) => {
         let dbFileName = null;
-        console.log(item.mimetype);
+        // console.log(item.mimetype);
 
         const fileName = Base64.encodeURI(
           (Math.random() * 1000).toString() + Date.now(),
@@ -52,8 +45,8 @@ export class TradingPlatformService {
           const base64Image = b64string.split(';base64,').pop();
           const buf = Buffer.from(b64string);
           // const buf = Buffer.from(item.buffer, 'base64');
-          console.log(buf);
-          // console.log(item.buffer.toString());
+          // console.log(buf);
+          // // console.log(item.buffer.toString());
           writeFile(
             `./uploads/trading-platform/${dbFileName}`,
             base64Image,
@@ -76,7 +69,7 @@ export class TradingPlatformService {
       });
       return filenames;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -95,8 +88,8 @@ export class TradingPlatformService {
     try {
       const dbFilenames = await this.uploadFiles(files);
       const images = dbFilenames.length ? dbFilenames : null;
-      console.log(createTradingPlatformProductDto);
-      console.log(images);
+      // console.log(createTradingPlatformProductDto);
+      // console.log(images);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -128,11 +121,11 @@ export class TradingPlatformService {
         );
       }
 
-      // console.log(isVip);
+      // // console.log(isVip);
       const paidUntil = new Date();
       paidUntil.setDate(paidUntil.getDate() + +promoPrimary);
 
-      console.log(paidUntil);
+      // console.log(paidUntil);
 
       const product = await TradingPlatformProduct.create({
         name,
@@ -189,7 +182,7 @@ export class TradingPlatformService {
 
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      // console.log(e);
+      // // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -219,8 +212,8 @@ export class TradingPlatformService {
     //   wts;
     // }
     try {
-      console.log(condition);
-      console.log('subcategoryId', subcategoryId);
+      // console.log(condition);
+      // console.log('subcategoryId', subcategoryId);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -249,7 +242,7 @@ export class TradingPlatformService {
       }
       if (subcategoryId) whereStatement.subcategoryId = subcategoryId;
 
-      console.log('whereStatement', whereStatement);
+      // console.log('whereStatement', whereStatement);
 
       const products = await TradingPlatformProduct.findAll({
         where: whereStatement,
@@ -290,11 +283,11 @@ export class TradingPlatformService {
         where: whereStatement,
       });
 
-      console.log(count);
+      // console.log(count);
 
       return { count, products };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -313,7 +306,7 @@ export class TradingPlatformService {
         where: { email: result.email },
       });
 
-      console.log(page);
+      // console.log(page);
 
       const products = await TradingPlatformProduct.findAll({
         where: { userId: user.id },
@@ -345,7 +338,7 @@ export class TradingPlatformService {
         where: { userId: user.id },
       });
 
-      console.log(count);
+      // console.log(count);
 
       return { count, products };
     } catch (e) {
@@ -357,7 +350,7 @@ export class TradingPlatformService {
 
   async toggleFavorites(req: any, id: number) {
     try {
-      console.log(id);
+      // console.log(id);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -378,7 +371,7 @@ export class TradingPlatformService {
       }
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -408,7 +401,7 @@ export class TradingPlatformService {
       }
       return { status: StatusCodes.OK, text: 'success' };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -459,11 +452,11 @@ export class TradingPlatformService {
         },
       });
 
-      console.log(count);
+      // console.log(count);
 
       return { count, products };
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -523,7 +516,7 @@ export class TradingPlatformService {
 
       return resData;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       throw new HttpException(e.message, StatusCodes.BAD_REQUEST, {
         cause: new Error('Some Error'),
       });
@@ -551,12 +544,12 @@ export class TradingPlatformService {
       isVip,
     } = updateTradingPlatformProductDto;
 
-    console.log(files);
+    // console.log(files);
 
     const dbFilenames = await this.uploadFiles(files);
     const images = dbFilenames.length ? dbFilenames : null;
-    console.log(updateTradingPlatformProductDto);
-    console.log(images);
+    // console.log(updateTradingPlatformProductDto);
+    // console.log(images);
 
     const token = req.headers.authorization;
     const result = jwt.verify(token, process.env.JWT);

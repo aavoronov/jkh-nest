@@ -7,8 +7,8 @@ import {
   Table,
 } from 'sequelize-typescript';
 // import { Profile } from './profile.entity';
-import { WorkerProfile } from '../../users/entities/worker-profile.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { WorkerProfile } from '../../users/entities/worker-profile.entity';
 
 @Table
 export class NewWorkerObjectApplication extends Model<NewWorkerObjectApplication> {

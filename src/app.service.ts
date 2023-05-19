@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as Color from 'color';
-// import Color from 'color';
 
 @Injectable()
 export class AppService {
   getHello(): string {
     // return 'Hello World!';
     const user = process.env.MAILER_USER;
-    console.log(user);
     const getRandomInt = (max: number): number => {
       return Math.floor(Math.random() * max);
     };
@@ -24,7 +22,7 @@ export class AppService {
     }
     // const contrast = ;
     // const blackContrast = Color('black').contrast(Color('white'));
-    console.log(pastelColor.hex());
+    // // console.log(pastelColor.hex());
     return `<!DOCTYPE html>
     <html lang="en">
     <head>

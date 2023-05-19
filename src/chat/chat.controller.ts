@@ -1,26 +1,10 @@
-import { Controller, Get, Req, Res, Body } from '@nestjs/common';
-import {
-  Delete,
-  Header,
-  Param,
-  Post,
-  Query,
-  Response,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common/decorators';
+import { Body, Controller, Get, Req } from '@nestjs/common';
+import { Post, Query, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { ChatService } from './chat.service';
-import { Message } from './entities/message.entity';
-import {
-  IGetMessages,
-  IMessage,
-  IRequestMessage,
-} from './interfaces/interface';
-import { Express } from 'express';
-import { diskStorage } from 'multer';
 import { Base64 } from 'js-base64';
+import { diskStorage } from 'multer';
+import { ChatService } from './chat.service';
 
 @ApiTags('chat')
 @Controller('chat')
@@ -29,7 +13,7 @@ export class ChatController {
 
   @Get()
   getMessages(@Req() req) {
-    console.log('fired');
+    // // console.log('fired');
     return this.chatService.getMessages(req);
   }
 
@@ -52,14 +36,13 @@ export class ChatController {
             const fileName = Base64.encodeURI(
               (Math.random() * 1000).toString() + Date.now(),
             );
-            console.log(file);
             const dbFileName =
               fileName +
               file.originalname.slice(file.originalname.lastIndexOf('.'));
             req.body.filename = dbFileName;
             cb(null, `${dbFileName}`);
           } catch (e) {
-            console.log(e);
+            // console.log(e);
           }
         },
       }),
@@ -84,7 +67,6 @@ export class ChatController {
     @Query('date') date: string,
     @Query('chat') chat: string,
   ) {
-    console.log(date);
     return this.chatService.getCalendarMessages(req, date, chat);
   }
 

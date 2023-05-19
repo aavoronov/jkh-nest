@@ -1,14 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { StatusCodes } from 'http-status-codes';
+import * as jwt from 'jsonwebtoken';
+import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { User } from '../users/entities/user.entity';
 import { CreatePollDto } from './dto/create-poll.dto';
 import { UpdatePollDto } from './dto/update-poll.dto';
-import { User } from '../users/entities/user.entity';
-import * as jwt from 'jsonwebtoken';
-import { Poll } from './entities/poll.entity';
 import { PollOption } from './entities/poll-options.entity';
-import { StatusCodes } from 'http-status-codes';
 import { PollReply } from './entities/poll-reply.entity';
-import { Sequelize } from 'sequelize';
-import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { Poll } from './entities/poll.entity';
 
 @Injectable()
 export class PollsService {
@@ -30,7 +29,7 @@ export class PollsService {
         }
 
         Promise.all(options.map(createPollOption)).catch((reason) => {
-          console.log(reason);
+          // console.log(reason);
           throw new HttpException(reason, StatusCodes.BAD_REQUEST, {
             cause: new Error('Cause Error'),
           });
@@ -47,7 +46,7 @@ export class PollsService {
 
       Promise.all(chats.map(createPollForOneChat))
         .catch((reason) => {
-          console.log(reason);
+          // console.log(reason);
           throw new HttpException(reason, StatusCodes.BAD_REQUEST, {
             cause: new Error('Cause Error'),
           });
@@ -65,7 +64,7 @@ export class PollsService {
 
       // const options = await PollOption.create();
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -117,13 +116,13 @@ export class PollsService {
 
       return polls;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
     }
   }
 
   async getMyPollsAsWorkerPerChat(req: any, chat: number) {
     try {
-      console.log(chat);
+      // console.log(chat);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -144,13 +143,13 @@ export class PollsService {
 
       return polls;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
     }
   }
 
   async getMyPollsPerChat(req: any, chat: number) {
     try {
-      console.log(chat);
+      // console.log(chat);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -158,7 +157,7 @@ export class PollsService {
       });
 
       const role = result.role;
-      console.log(role);
+      // console.log(role);
 
       const whereStatement: { chatId: number; workerId?: number } = {
         chatId: chat,
@@ -183,7 +182,7 @@ export class PollsService {
 
       return polls;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
     }
   }
 
@@ -200,9 +199,9 @@ export class PollsService {
         include: [{ model: Poll }],
       });
 
-      console.log(poll.poll.isMultipleChoice);
+      // console.log(poll.poll.isMultipleChoice);
 
-      console.log('optionId', optionId);
+      // console.log('optionId', optionId);
 
       const hasReplied = await PollOption.findOne({
         where: { pollId: poll.poll.id },
@@ -219,7 +218,7 @@ export class PollsService {
         );
       }
 
-      console.log(!!hasReplied);
+      // console.log(!!hasReplied);
 
       const createOneReply = async (optionId: number) => {
         const reply = await PollReply.create({
@@ -248,7 +247,7 @@ export class PollsService {
 
       // if()
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
       throw new HttpException(e.message, e.status, {
         cause: new Error('Some Error'),
       });

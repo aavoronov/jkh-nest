@@ -1,11 +1,9 @@
-import React from 'react';
-import { Box, H3 } from '@adminjs/design-system';
-import { ActionProps } from 'adminjs';
 import { ShowPropertyProps } from 'adminjs/types/src';
+import React from 'react';
 
 const ObjectWithComplaint = (props: ShowPropertyProps) => {
   const { record, property } = props;
-  console.log(record);
+  // console.log(record);
   enum Types {
     mapObject = 'map object',
     mapReview = 'map review',

@@ -25,7 +25,7 @@ export class AuthMiddleware implements NestMiddleware {
 
     //   const token = await req.headers.authorization;
     //   const result = await jwt.verify(token, process.env.JWT);
-    //   console.log(result);
+    //   // console.log(result);
     //   if (!!result.message) {
     //     throw new HttpException(
     //       'Сессия истекла или недействительна',
@@ -47,7 +47,7 @@ export class AuthMiddleware implements NestMiddleware {
         include: [{ model: Verifications }],
       });
 
-      console.log(user);
+      // console.log(user);
 
       if (!user || !!user.verification) {
         // if (!user || !user.verification) {

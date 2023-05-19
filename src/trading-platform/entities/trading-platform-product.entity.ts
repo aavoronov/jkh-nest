@@ -1,4 +1,3 @@
-import { User } from '../../users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   BelongsTo,
@@ -9,8 +8,9 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { TradingPlatformSubcategory } from './trading-platform-subcategory.entity';
+import { User } from '../../users/entities/user.entity';
 import { TradingPlatformFavorites } from './trading-platform-favorites.entity';
+import { TradingPlatformSubcategory } from './trading-platform-subcategory.entity';
 
 @Table
 export class TradingPlatformProduct extends Model<TradingPlatformProduct> {

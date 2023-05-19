@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { MapObjectsService } from './map-objects.service';
-import { MapObjectsController } from './map-objects.controller';
-import { AuthMiddleware } from '../utils/middleware/auth.middleware';
 import { AccessMiddleware } from '../utils/middleware/access.middleware';
+import { AuthMiddleware } from '../utils/middleware/auth.middleware';
+import { MapObjectsController } from './map-objects.controller';
+import { MapObjectsService } from './map-objects.service';
 
 @Module({
   controllers: [MapObjectsController],

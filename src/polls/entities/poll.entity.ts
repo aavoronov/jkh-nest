@@ -1,15 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
   BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
+  HasMany,
+  Model,
+  Table,
 } from 'sequelize-typescript';
-import { PollOption } from './poll-options.entity';
-import { User } from '../../users/entities/user.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
+import { User } from '../../users/entities/user.entity';
+import { PollOption } from './poll-options.entity';
 
 @Table
 export class Poll extends Model<Poll> {

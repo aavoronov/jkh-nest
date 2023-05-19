@@ -1,21 +1,18 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
-import sequelize from 'sequelize';
+import * as jwt from 'jsonwebtoken';
 import { EstateObjectRights } from '../estate-objects/entities/estate-object-rights.entity';
 import { EstateObject } from '../estate-objects/entities/estate-object.entity';
+import { GenericData } from '../generic-data/entities/generic-data.entity';
+import { MailerService } from '../mailer/mailer.service';
 import { Profile } from '../users/entities/profile.entity';
 import { User } from '../users/entities/user.entity';
+import { WorkerProfile } from '../users/entities/worker-profile.entity';
+import { RegisterWorkerObjectDto } from './dto/register-worker-object.dto';
 import { SignUpToRoomDto } from './dto/sign-up-to-room.dto';
 import { ChatRoom } from './entities/chat-room.entity';
 import { RoomAccess } from './entities/room-access.entity';
-import * as jwt from 'jsonwebtoken';
-import { Verifications } from '../verifications/entities/verification.entity';
-import { WorkerProfile } from '../users/entities/worker-profile.entity';
-import { GenericData } from '../generic-data/entities/generic-data.entity';
-import { RegisterWorkerObjectDto } from './dto/register-worker-object.dto';
 import { NewWorkerObjectApplication } from './entities/worker-object-application.entity';
-import { MailerService } from '../mailer/mailer.service';
-import { EstateObjectsService } from '../estate-objects/estate-objects.service';
 
 const mailer = new MailerService();
 
@@ -29,7 +26,7 @@ export class ChatRoomsService {
         where: { email: result.email },
       });
 
-      // console.log('user', user);
+      // // console.log('user', user);
 
       const chatRooms = await ChatRoom.findAll({
         // where: {
@@ -54,19 +51,19 @@ export class ChatRoomsService {
 
       const roomsAvailable = chatRooms.map((item) => item.id);
 
-      console.log(roomsAvailable);
+      // console.log(roomsAvailable);
 
       const rooms = await ChatRoom.findAll({ where: { id: roomsAvailable } });
       return rooms;
     } catch (e) {
-      console.log('e', e);
+      // console.log('e', e);
     }
   }
 
   async signUp(signUpToRoomDto: SignUpToRoomDto) {
     try {
       const { email, chat } = signUpToRoomDto;
-      console.log(email + chat);
+      // console.log(email + chat);
       const user = await User.findOne({
         where: { email: email },
         attributes: ['id'],
@@ -78,8 +75,8 @@ export class ChatRoomsService {
           roomId: parseInt(chat),
         },
       });
-      // console.log(newRoom.userId); // 'sdepold'
-      // console.log(created); // The boolean indicating whether this instance was just created
+      // // console.log(newRoom.userId); // 'sdepold'
+      // // console.log(created); // The boolean indicating whether this instance was just created
       if (!created) {
         throw new HttpException(
           'Вы уже зарегистрированы в этом чате',
@@ -109,7 +106,7 @@ export class ChatRoomsService {
 
   async leaveChat(email: string, chat: string) {
     try {
-      console.log(email + chat);
+      // console.log(email + chat);
       const user = await User.findOne({
         where: { email: email },
         attributes: ['id'],
@@ -197,7 +194,7 @@ export class ChatRoomsService {
         where: { email: email },
         attributes: ['id'],
       });
-      console.log(user.id, chat);
+      // console.log(user.id, chat);
       const record = await RoomAccess.findOne({
         where: { userId: parseInt(user.id), roomId: chat },
       });
@@ -208,15 +205,15 @@ export class ChatRoomsService {
       });
 
       // { updatedAt: sequelize.literal('CURRENT_TIMESTAMP') },
-      // console.log(updated);
+      // // console.log(updated);
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
   async getAdPrices(req: any): Promise<any[]> {
     try {
-      // console.log(radii);
+      // // console.log(radii);
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
       const user = await User.findOne({
@@ -227,7 +224,7 @@ export class ChatRoomsService {
       const companyCoordinates = user.workerProfile.point.coordinates;
       const companyId = user.workerProfile.id;
 
-      console.log(companyCoordinates);
+      // console.log(companyCoordinates);
 
       const radii = await (
         await GenericData.findOne({
@@ -237,7 +234,7 @@ export class ChatRoomsService {
         .slice(1, -1)
         .split(',');
 
-      console.log(radii);
+      // console.log(radii);
 
       const regularPriceMultiplier = await (
         await GenericData.findOne({
@@ -251,7 +248,7 @@ export class ChatRoomsService {
         })
       ).value;
 
-      console.log(+regularPriceMultiplier, +millionaireCityPriceMultiplier);
+      // console.log(+regularPriceMultiplier, +millionaireCityPriceMultiplier);
 
       const millionaireCitiesBoundaries: {
         name: string;
@@ -303,7 +300,7 @@ export class ChatRoomsService {
         });
 
         const result: number = distance[0][0].distance;
-        console.log(city.name, result);
+        // console.log(city.name, result);
 
         return city.radius > result;
       };
@@ -312,7 +309,7 @@ export class ChatRoomsService {
         millionaireCitiesBoundaries.map(getIsInCircleForOneCity),
       );
 
-      console.log(withinAMillionaireCity);
+      // console.log(withinAMillionaireCity);
 
       const getRoomsForOneRadius = async (
         radius: number,
@@ -354,21 +351,21 @@ export class ChatRoomsService {
 
         const getUsersForOneChat = async (roomId: number) => {
           const users = await RoomAccess.count({ where: { roomId: roomId } });
-          // console.log(users);
+          // // console.log(users);
           usersNumber += users;
         };
 
         const chatsArray = Array.from(chatRooms);
         // chatRooms.forEach(async (item) => {
         //   const users = await RoomAccess.count({ where: { roomId: item } });
-        //   console.log(users);
+        //   // console.log(users);
         //   usersNumber += users;
         // });
 
         await Promise.all(chatsArray.map(getUsersForOneChat));
 
         // const users =
-        // console.log(estateObjects);
+        // // console.log(estateObjects);
         const multiplier = withinAMillionaireCity.includes(true)
           ? +millionaireCityPriceMultiplier
           : +regularPriceMultiplier;
@@ -384,10 +381,10 @@ export class ChatRoomsService {
 
       const prices = await Promise.all(radii.map(getRoomsForOneRadius));
 
-      console.log(prices);
+      // console.log(prices);
       return prices;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -397,7 +394,7 @@ export class ChatRoomsService {
   ): Promise<void> {
     try {
       const { address, longitude, latitude } = registerWorkerObjectDto;
-      console.log(registerWorkerObjectDto);
+      // console.log(registerWorkerObjectDto);
 
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
@@ -428,7 +425,7 @@ export class ChatRoomsService {
 
       await mailer.newWorkerObjectApplication(record.id);
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   }
 }

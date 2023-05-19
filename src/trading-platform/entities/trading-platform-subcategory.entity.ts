@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Model,
-  DataType,
-  Table,
-  Column,
   BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
   HasMany,
+  Model,
+  Table,
 } from 'sequelize-typescript';
 import { TradingPlatformCategory } from './trading-platform-category.entity';
 import { TradingPlatformProduct } from './trading-platform-product.entity';

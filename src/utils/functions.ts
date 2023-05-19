@@ -39,7 +39,7 @@ export const checkEmail = (value: string): ICheckResult => {
   return { correct: true, result: value };
 };
 export const checkPhone = (value: string): ICheckResult => {
-  console.log('value', value);
+  // console.log('value', value);
   if (value.match(numbers).length < 11)
     return {
       correct: false,
@@ -289,7 +289,7 @@ export const maskPhone = (phone: string): string => {
 //             },
 //         }
 //     } catch (e) {
-//         console.log(e)
+//         // console.log(e)
 //         res.status(400).send({
 //             status: 400,
 //             message: 'BAD REQUEST',
