@@ -29,27 +29,69 @@ export class MapObjectsController {
   @Get('/import/:file')
   async import(@Param('file') file: string) {
     const data = test(file);
-    data.forEach(async (i) => {
-      const object = await MapObject.create({
-        point: { type: 'Point', coordinates: [i[6], i[5]] },
-        //flipped
-        category: i[7],
-        isApproved: true,
+
+    const createEntriesForOneObject = async (i) => {
+      try {
+        const object = await MapObject.create({
+          point: { type: 'Point', coordinates: [i[6], i[5]] },
+          //flipped
+          category: i[7],
+          isApproved: true,
+        });
+        await MapObjectDetails.create({
+          objectId: object.id,
+          name: i[0],
+          phoneStationary: i[1],
+          phoneMobile: i[2],
+          address: i[3],
+          website: i[4],
+        });
+      } catch (e) {
+        console.log('e', e.message);
+      }
+    };
+
+    const done = Promise.all(data.map(createEntriesForOneObject))
+      .then(() => {
+        MapObject.destroy({ where: { category: { [Op.is]: null } } });
+      })
+      .then(() =>
+        MapObjectDetails.destroy({
+          where: { objectId: { [Op.is]: null } },
+        }),
+      )
+      .then(() => {
+        console.log('ok');
+      })
+      .catch(() => {
+        return { status: StatusCodes.INTERNAL_SERVER_ERROR, text: 'error' };
       });
-      await MapObjectDetails.create({
-        objectId: object.id,
-        name: i[0],
-        phoneStationary: i[1],
-        phoneMobile: i[2],
-        address: i[3],
-        website: i[4],
-      });
-    });
+
+    if (await done) {
+      return { status: StatusCodes.OK, text: 'success' };
+    }
+
+    return { status: StatusCodes.OK, text: 'success' };
+
+    // data.forEach(async (i) => {
+    //   const object = await MapObject.create({
+    //     point: { type: 'Point', coordinates: [i[6], i[5]] },
+    //     //flipped
+    //     category: i[7],
+    //     isApproved: true,
+    //   });
+    //   await MapObjectDetails.create({
+    //     objectId: object.id,
+    //     name: i[0],
+    //     phoneStationary: i[1],
+    //     phoneMobile: i[2],
+    //     address: i[3],
+    //     website: i[4],
+    //   });
+    // });
     // (i) => sequelize.query('UPDATE users SET y = 42 WHERE x = 12'),
 
     // // console.log(data);
-    await MapObject.destroy({ where: { category: { [Op.is]: null } } });
-    return { status: StatusCodes.OK, text: 'success' };
   }
 
   @Get()
