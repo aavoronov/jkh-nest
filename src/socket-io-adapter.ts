@@ -30,14 +30,14 @@ export class SocketIOAdapter extends IoAdapter {
       ),
 
       requestCert: false,
+      rejectUnauthorized: false,
     };
-    // rejectUnauthorized: false
     // // console.log(`${process.env.CLIENT_URL}:${process.env.CLIENT_PORT}`);
 
     const optionsWithCORS: ServerOptions = {
       ...options,
-      cors,
       ...httpsOptions,
+      cors,
     };
 
     return super.createIOServer(port, optionsWithCORS);
