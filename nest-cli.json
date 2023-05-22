@@ -3,6 +3,10 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "./",
   "compilerOptions": {
-    "assets": ["./src/core/components/**"]
+    "assets": [
+      "./src/core/components/**",
+      "./src/utils/*.csv",
+      "./src/utils/import.js"
+    ]
   }
 }
