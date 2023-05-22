@@ -8,13 +8,13 @@ import { readFileSync } from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
-    httpsOptions: {
-      key: readFileSync(`${process.env.LETSENCRYPT_DIR}/privkey.pem`),
-      cert: readFileSync(`${process.env.LETSENCRYPT_DIR}/cert.pem`),
-      ca: readFileSync(`${process.env.LETSENCRYPT_DIR}/chain.pem`),
-      requestCert: false,
-      rejectUnauthorized: false,
-    },
+    // httpsOptions: {
+    //   key: readFileSync(`${process.env.LETSENCRYPT_DIR}/privkey.pem`),
+    //   cert: readFileSync(`${process.env.LETSENCRYPT_DIR}/cert.pem`),
+    //   ca: readFileSync(`${process.env.LETSENCRYPT_DIR}/chain.pem`),
+    //   requestCert: false,
+    //   rejectUnauthorized: false,
+    // },
   });
   app.setGlobalPrefix('api/v1');
   const configService = app.get(ConfigService);
