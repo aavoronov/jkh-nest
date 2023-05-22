@@ -14,10 +14,10 @@ export class SocketIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions) {
     const clientPort = parseInt(process.env.CLIENT_PORT);
 
-    // const cors = {
-    //   origin: [`${process.env.CLIENT_URL}`],
-    // };
-    const cors = true;
+    const cors = {
+      origin: [`${process.env.CLIENT_URL}`],
+    };
+    // const cors = true;
 
     let httpsOptions;
 
@@ -34,10 +34,10 @@ export class SocketIOAdapter extends IoAdapter {
     }
 
     // // console.log(`${process.env.CLIENT_URL}:${process.env.CLIENT_PORT}`);
+    // ...httpsOptions,
 
     const optionsWithCORS: ServerOptions = {
       ...options,
-      ...httpsOptions,
       cors,
     };
 
