@@ -6,7 +6,8 @@
     "assets": [
       "./src/core/components/**",
       "./src/utils/*.csv",
-      "./src/utils/import.js"
+      "./src/utils/import.js",
+      "./src/core/core/components"
     ]
   }
 }
