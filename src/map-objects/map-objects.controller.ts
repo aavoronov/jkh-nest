@@ -26,6 +26,18 @@ import { MapObjectsService } from './map-objects.service';
 export class MapObjectsController {
   constructor(private readonly mapObjectsService: MapObjectsService) {}
 
+  // files: [
+  //   'bank',
+  //   'bathroom',
+  //   'beauty',
+  //   'cafe',
+  //   'church',
+  //   'education',
+  //   'gas',
+  //   'museum',
+  //   'shops',
+  // ];
+
   @Get('/import/:file')
   async import(@Param('file') file: string) {
     const data = test(file);
@@ -46,6 +58,7 @@ export class MapObjectsController {
           address: i[3],
           website: i[4],
         });
+        return true;
       } catch (e) {
         console.log('e', e.message);
       }
@@ -67,9 +80,9 @@ export class MapObjectsController {
         return { status: StatusCodes.INTERNAL_SERVER_ERROR, text: 'error' };
       });
 
-    if (await done) {
-      return { status: StatusCodes.OK, text: 'success' };
-    }
+    // if (await done) {
+    //   return { status: StatusCodes.OK, text: 'success' };
+    // }
 
     return { status: StatusCodes.OK, text: 'success' };
 
