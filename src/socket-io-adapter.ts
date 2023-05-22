@@ -18,20 +18,20 @@ export class SocketIOAdapter extends IoAdapter {
       origin: [`${process.env.CLIENT_URL}`],
     };
 
-    const httpsOptions = {
-      key: readFileSync(
-        '/etc/letsencrypt/live/1203521-cu41329.tw1.ru/privkey.pem',
-      ),
-      cert: readFileSync(
-        '/etc/letsencrypt/live/1203521-cu41329.tw1.ru/cert.pem',
-      ),
-      ca: readFileSync(
-        '/etc/letsencrypt/live/1203521-cu41329.tw1.ru/chain.pem',
-      ),
+    let httpsOptions;
 
-      requestCert: false,
-      rejectUnauthorized: false,
-    };
+    if (process.env.ENV === 'prod') {
+      httpsOptions = {
+        key: readFileSync(`${process.env.LETSENCRYPT_DIR}/privkey.pem`),
+        cert: readFileSync(`${process.env.LETSENCRYPT_DIR}/cert.pem`),
+        ca: readFileSync(`${process.env.LETSENCRYPT_DIR}/chain.pem`),
+
+        requestCert: false,
+        rejectUnauthorized: false,
+      };
+      console.log('first', process.env.LETSENCRYPT_DIR);
+    }
+
     // // console.log(`${process.env.CLIENT_URL}:${process.env.CLIENT_PORT}`);
 
     const optionsWithCORS: ServerOptions = {
