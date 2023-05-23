@@ -19,7 +19,7 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api/v1');
   app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 50000 }));
   const configService = app.get(ConfigService);
   app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
   const config = new DocumentBuilder()
