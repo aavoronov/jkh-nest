@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { SocketIOAdapter } from './socket-io-adapter';
 import { readFileSync } from 'fs';
+import { urlencoded, json } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,6 +18,8 @@ async function bootstrap() {
     // },
   });
   app.setGlobalPrefix('api/v1');
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
   const configService = app.get(ConfigService);
   app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
   const config = new DocumentBuilder()
