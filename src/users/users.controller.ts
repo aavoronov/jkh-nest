@@ -49,8 +49,6 @@ export class UsersController {
     @UploadedFiles()
     files: {
       inn: Express.Multer.File;
-      contract: Express.Multer.File;
-      snils: Express.Multer.File;
     },
   ) {
     // console.log(files);
