@@ -1128,8 +1128,7 @@ export class UsersService {
       const newProfile = await WorkerProfile.create({
         userId: newApplication.id,
         inn,
-        snils: null,
-        contract: null,
+
         name,
         // riasToken: riasToken ?? null,
         address: address,
