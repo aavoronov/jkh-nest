@@ -20,7 +20,7 @@ export class MailerService {
 
   user = 'voronov.xcvi';
   pass = 'ogkluftufzovrllc';
-  mailerUrl = 'http://api.1203521-cu41329.tw1.ru/';
+  mailerUrl = 'http://api.1203521-cu41329.tw1.ru/api/';
   adminEmail = 'stinger1221@mail.ru';
   adminUrl = 'http://api.1203521-cu41329.tw1.ru/admin/';
 
