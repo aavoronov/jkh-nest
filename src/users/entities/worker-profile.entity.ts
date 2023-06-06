@@ -27,13 +27,13 @@ export class WorkerProfile extends Model<WorkerProfile> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   contract: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   snils: string;
 
