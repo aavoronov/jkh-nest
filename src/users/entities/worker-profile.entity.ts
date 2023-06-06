@@ -26,18 +26,6 @@ export class WorkerProfile extends Model<WorkerProfile> {
   inn: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  contract: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  snils: string;
-
-  @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })

@@ -986,8 +986,6 @@ export class UsersService {
     createWorkerProfileDto: CreateWorkerProfileDto,
     files: {
       inn: Express.Multer.File;
-      // contract: Express.Multer.File;
-      // snils: Express.Multer.File;
     },
   ) {
     const {
@@ -1102,8 +1100,6 @@ export class UsersService {
       //   phone,
       //   type,
       //   inn,
-      //   contract,
-      //   snils,
       // });
 
       let randomColor: Color, pastelColor: Color, contrast: number;
@@ -1128,7 +1124,6 @@ export class UsersService {
       const newProfile = await WorkerProfile.create({
         userId: newApplication.id,
         inn,
-
         name,
         // riasToken: riasToken ?? null,
         address: address,
