@@ -986,8 +986,8 @@ export class UsersService {
     createWorkerProfileDto: CreateWorkerProfileDto,
     files: {
       inn: Express.Multer.File;
-      contract: Express.Multer.File;
-      snils: Express.Multer.File;
+      // contract: Express.Multer.File;
+      // snils: Express.Multer.File;
     },
   ) {
     const {
@@ -1089,14 +1089,12 @@ export class UsersService {
 
       const docs: Partial<{
         inn: string;
-        contract: string;
-        snils: string;
       }> = {};
       for (const item in files) {
         const dbName = await this.uploadFile(files[item][0]);
         Object.assign(docs, { [item]: dbName });
       }
-      const { inn, contract, snils } = docs;
+      const { inn } = docs;
 
       // const newApplication = await WorkerProfile.create({
       //   name,
@@ -1130,8 +1128,8 @@ export class UsersService {
       const newProfile = await WorkerProfile.create({
         userId: newApplication.id,
         inn,
-        // snils,
-        // contract,
+        snils: null,
+        contract: null,
         name,
         // riasToken: riasToken ?? null,
         address: address,
