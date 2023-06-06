@@ -242,8 +242,6 @@ const WorkerProfileResource = {
       createdAt: timestampProperty,
       updatedAt: timestampProperty,
       inn: fileProperty,
-      contract: fileProperty,
-      snils: fileProperty,
     },
     componentLoader,
     actions: {
