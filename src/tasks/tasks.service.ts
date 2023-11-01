@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron, Timeout } from '@nestjs/schedule';
 import { StatusCodes } from 'http-status-codes';
-import { Sequelize } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { ChatAd } from '../chat-ad/entities/chat-ad.entity';
 import { Message } from '../chat/entities/message.entity';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
@@ -140,9 +140,8 @@ export class TasksService {
 
   @Timeout(30 * 1000)
   async handleTimeout() {
-    this.logger.debug('Called once after 5 seconds');
     const admin = await User.findOne({
-      where: { email: 'admin@example.com', role: 'admin' },
+      where: { email: 'admin@example.com', role: { [Op.contains]: ['admin'] } },
     });
 
     this.logger.debug(!!admin && 'admin exists');
@@ -152,7 +151,7 @@ export class TasksService {
         email: 'admin@example.com',
         password:
           '$2b$10$wYFl4Y1lSzc2SHmsaKN9k.NdXhL8xgGXJFjWN5B4vJNvUHenF7iCW',
-        role: 'admin',
+        role: ['admin'],
       });
       this.logger.debug(!!admin && 'admin created');
     }

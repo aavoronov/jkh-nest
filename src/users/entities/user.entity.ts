@@ -18,6 +18,7 @@ import { TradingPlatformProduct } from '../../trading-platform/entities/trading-
 import { Verifications } from '../../verifications/entities/verification.entity';
 import { Profile } from './profile.entity';
 import { WorkerProfile } from './worker-profile.entity';
+import { Role } from '../dto/user.dto';
 
 @Table
 export class User extends Model<User> {
@@ -49,7 +50,8 @@ export class User extends Model<User> {
   password: string;
 
   @Column({
-    defaultValue: 'user',
+    type: DataType.ARRAY(DataType.STRING),
+    defaultValue: ['user'],
     values: [
       'user',
       'uk',
@@ -61,7 +63,7 @@ export class User extends Model<User> {
     ],
   })
   @ApiProperty()
-  role: string;
+  role: Array<Role>;
 
   @Column({
     type: DataType.BOOLEAN,

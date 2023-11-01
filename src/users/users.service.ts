@@ -173,34 +173,35 @@ export class UsersService {
     }
   }
 
-  async signUpByPhone(user: CreateUserByPhoneDto) {
-    const { phone } = user;
-    const newUser = await User.create({
-      phone: phone,
-    });
-    if (newUser) {
-      let randomColor: Color, pastelColor: Color, contrast: number;
-      while (1) {
-        randomColor = Color.rgb(
-          UsersService.getRandomInt(255),
-          UsersService.getRandomInt(255),
-          UsersService.getRandomInt(255),
-        );
-        pastelColor = randomColor.saturate(0.5).mix(Color('white'), 0.2);
-        contrast = pastelColor.contrast(Color('white'));
-        if (contrast > 2) break;
-      }
+  // async signUpByPhone(user: CreateUserByPhoneDto) {
+  //   const { phone } = user;
+  //   const newUser = await User.create({
+  //     phone: phone,
+  //   });
+  //   if (newUser) {
+  //     let randomColor: Color, pastelColor: Color, contrast: number;
+  //     while (1) {
+  //       randomColor = Color.rgb(
+  //         UsersService.getRandomInt(255),
+  //         UsersService.getRandomInt(255),
+  //         UsersService.getRandomInt(255),
+  //       );
+  //       pastelColor = randomColor.saturate(0.5).mix(Color('white'), 0.2);
+  //       contrast = pastelColor.contrast(Color('white'));
+  //       if (contrast > 2) break;
+  //     }
 
-      await Profile.create({ userId: newUser.id, color: pastelColor.hex() });
-    }
+  //     await Profile.create({ userId: newUser.id, color: pastelColor.hex() });
+  //   }
 
-    // return { email: newUser.email };
-    return { status: StatusCodes.CREATED, text: 'success' };
-  }
+  //   // return { email: newUser.email };
+  //   return { status: StatusCodes.CREATED, text: 'success' };
+  // }
 
   async authorizeByEmail(userData: UserDto) {
-    const { email, password } = userData;
+    const { email, password, role } = userData;
     // // console.log(email, password);
+    console.log('role', role);
 
     try {
       if (!email)
@@ -251,6 +252,16 @@ export class UsersService {
         });
       }
 
+      if (user && !user.role.includes(role)) {
+        throw new HttpException(
+          'У аккаунта нет такой роли',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
+
       if (user)
         passwordMatches = UsersService.validPassword(password, user.password);
 
@@ -276,7 +287,7 @@ export class UsersService {
         // // console.log('verification exists');
       }
 
-      if (user.role === 'admin') {
+      if (user.role.includes('admin')) {
         throw new HttpException(
           'Нет доступа к публичной части',
           StatusCodes.FORBIDDEN,
@@ -286,7 +297,7 @@ export class UsersService {
         );
       }
 
-      if (user.role !== 'user' && !user.workerProfile.isResolved) {
+      if (!!user.workerProfile && !user.workerProfile.isResolved) {
         throw new HttpException(
           'Ваша учетная запись еще не одобрена администратором. Пожалуйста, ожидайте email',
           StatusCodes.FORBIDDEN,
@@ -296,15 +307,19 @@ export class UsersService {
         );
       }
 
-      const accessToken = jwt.sign(user.toJSON(), process.env.JWT, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
-      });
+      const accessToken = jwt.sign(
+        { ...user.toJSON(), role: role },
+        process.env.JWT,
+        {
+          expiresIn: process.env.JWT_EXPIRES_IN,
+        },
+      );
 
       return {
         status: StatusCodes.OK,
         message: ReasonPhrases.OK,
         token: accessToken,
-        user: { email: user.email, role: user.role },
+        user: { email: user.email, role: role },
       };
     } catch (e) {
       throw new HttpException(e.message, e.status, {
@@ -462,7 +477,7 @@ export class UsersService {
         });
       }
 
-      if (user.role === 'admin') {
+      if (user.role.includes('admin')) {
         throw new HttpException(
           'Нет доступа к публичной части',
           StatusCodes.FORBIDDEN,
@@ -472,7 +487,7 @@ export class UsersService {
         );
       }
 
-      if (user.role !== 'user' && !user.workerProfile?.isResolved) {
+      if (!!user.workerProfile && !user.workerProfile?.isResolved) {
         throw new HttpException(
           'Ваша учетная запись еще не одобрена администратором. Пожалуйста, ожидайте email',
           StatusCodes.FORBIDDEN,
@@ -645,6 +660,7 @@ export class UsersService {
       //   },
       // );
       const result = await jwt.verify(token, process.env.JWT);
+      console.log('result', result);
 
       // console.log(result);
       if (!!result.message) {
@@ -666,6 +682,7 @@ export class UsersService {
           },
         );
       }
+
       return { email: result.email, phone: result.phone, role: result.role };
       // // console.log(result);
     } catch (e) {
@@ -770,7 +787,7 @@ export class UsersService {
       }
       let profile;
 
-      if (result.role === 'user') {
+      if (updateData.role === 'user') {
         profile = await Profile.findOne({ where: { userId: user.id } });
         await profile.update({
           pseudonym: updateData.pseudonym,
@@ -998,29 +1015,43 @@ export class UsersService {
       longitude,
       address,
     } = createWorkerProfileDto;
-    let dbType;
+    const dbType = [];
 
-    switch (type) {
-      case 'Для УК, ТСЖ':
-        dbType = 'uk';
-        break;
+    const typeArray = JSON.parse(type);
 
-      case 'Для Управляющего по дому':
-        dbType = 'upravdom';
-        break;
+    console.log(type);
+    console.log(JSON.parse(type));
+    console.log(type.split(','));
 
-      case 'Для рекламодателей':
-        dbType = 'admakers';
-        break;
+    typeArray.forEach((item: string) => {
+      switch (item) {
+        case 'Пользователь':
+          dbType.push('user');
+          break;
 
-      case 'Для магазинов':
-        dbType = 'stores';
-        break;
+        case 'Для УК, ТСЖ':
+          dbType.push('uk');
+          break;
 
-      case 'Для представителей бизнеса':
-        dbType = 'business';
-        break;
-    }
+        case 'Для Управляющего по дому':
+          dbType.push('upravdom');
+          break;
+
+        case 'Для рекламодателей':
+          dbType.push('admakers');
+          break;
+
+        case 'Для магазинов':
+          dbType.push('stores');
+          break;
+
+        case 'Для представителей бизнеса':
+          dbType.push('business');
+          break;
+      }
+    });
+
+    console.log(dbType);
 
     try {
       const existingApplication = await User.findOne({
@@ -1028,24 +1059,24 @@ export class UsersService {
           [Op.or]: [{ email: email }, { phone: phone }],
         },
       });
-      if (!!existingApplication)
-        if (existingApplication.role === 'user') {
-          throw new HttpException(
-            'Пользователь с указанными данными уже существует',
-            StatusCodes.CONFLICT,
-            {
-              cause: new Error('Some Error'),
-            },
-          );
-        } else {
-          throw new HttpException(
-            'Заявка с указанными телефоном и/или почтой уже была подана. Ожидайте одобрения',
-            StatusCodes.CONFLICT,
-            {
-              cause: new Error('Some Error'),
-            },
-          );
-        }
+      if (!!existingApplication) {
+        // if (existingApplication.role === 'user') {
+        //   throw new HttpException(
+        //     'Пользователь с указанными данными уже существует',
+        //     StatusCodes.CONFLICT,
+        //     {
+        //       cause: new Error('Some Error'),
+        //     },
+        //   );
+        // } else {
+        throw new HttpException(
+          'Заявка с указанными телефоном и/или почтой уже была подана. Ожидайте одобрения',
+          StatusCodes.CONFLICT,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
 
       // if (!!riasToken) {
       //   const checkTokenExistence = await WorkerProfile.findOne({
@@ -1094,14 +1125,6 @@ export class UsersService {
       }
       const { inn } = docs;
 
-      // const newApplication = await WorkerProfile.create({
-      //   name,
-      //   email,
-      //   phone,
-      //   type,
-      //   inn,
-      // });
-
       let randomColor: Color, pastelColor: Color, contrast: number;
       while (1) {
         randomColor = Color.rgb(
@@ -1125,12 +1148,18 @@ export class UsersService {
         userId: newApplication.id,
         inn,
         name,
-        // riasToken: riasToken ?? null,
         address: address,
         point: { type: 'Point', coordinates: [longitude, latitude] },
         //flipped
         color: pastelColor.hex(),
       });
+
+      if (dbType.includes('user')) {
+        await Profile.create({
+          userId: newApplication.id,
+          color: pastelColor.hex(),
+        });
+      }
 
       if (!newApplication || !newProfile) {
         throw new HttpException(

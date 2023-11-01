@@ -8,13 +8,14 @@ function validPassword(password: string, userPassword: string) {
 export const authenticate = async (email: string, password: string) => {
   const user = await User.findOne({
     where: { email },
-    attributes: ['email', 'password', 'role'],
+    attributes: ['email', 'password', 'role', 'id'],
   });
 
   let passwordMatches = false;
+  console.log(user.role);
 
   if (!!user) passwordMatches = validPassword(password, user.password);
-  if (passwordMatches && user.role === 'admin')
+  if (passwordMatches && user.role.includes('admin'))
     return Promise.resolve({ email });
 
   return null;

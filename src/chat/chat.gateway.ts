@@ -69,15 +69,6 @@ export class ChatGateway
     @MessageBody() message: IMessageBody,
     // @MessageBody() file: any,
   ): Promise<void> {
-    // @MessageBody() message: IMessageBody
-    // // console.log(message);
-    // // console.log(typeof message.file);
-
-    //! --------------------------------------------- //
-    // try {
-    // // console.log(message);
-    // const { sender, message, filename, roomId } = message;
-
     const user = await User.findOne({
       where: { email: message.email },
       attributes: ['id'],
@@ -115,45 +106,7 @@ export class ChatGateway
         cause: new Error('Some Error'),
       });
     }
-    // console.log('ok');
-    // } catch (e) {
-    // // console.log(e);
-    // throw new HttpException(e.message, e.status, {
-    //   cause: new Error('Some Error'),
-    // });
-    // }
 
-    // FileInterceptor('file', {
-    //   storage: diskStorage({
-    //     destination: './uploads',
-    //     filename: (req, file, cb) => {
-    //       try {
-    //         const fileName = Base64.encodeURI(
-    //           (Math.random() * 1000).toString() + Date.now(),
-    //         );
-    //         // console.log(file);
-    //         const dbFileName =
-    //           fileName +
-    //           file.originalname.slice(file.originalname.lastIndexOf('.'));
-    //         req.body.filename = dbFileName;
-    //         cb(null, `${dbFileName}`);
-    //       } catch (e) {
-    //         // console.log(e);
-    //       }
-    //     },
-    //   }),
-    // }),
-
-    //! --------------------------------------------- //
-
-    // const time = new Date();
-    // // console.log(time);
-
-    // const file = !!message.file
-    //   ? `data:image/${message.filename.slice(
-    //       message.filename.lastIndexOf('.') + 1,
-    //     )};base64,${message.file.toString('base64')}`
-    //   : '';
     const file = !!message.file ? dbFileName : '';
     // console.log(file);
     const payload = {
@@ -170,23 +123,4 @@ export class ChatGateway
     // console.log('emits');
     this.io.to(message.roomId).emit('message', payload);
   }
-
-  // socket.on('room', data => {
-  //   // console.log('room join');
-  //   // console.log(data);
-  //   socket.join(data.room);
-  // });
-
-  // socket.on('leave room', data => {
-  //   // console.log('leaving room');
-  //   // console.log(data);
-  //   socket.leave(data.room)
-  // });
-
-  // socket.on('new message', data => {
-  //   // console.log(data.room);
-  //   socket.broadcast
-  //   .to(data.room)
-  //   .emit('receive message', data)
-  // });
 }

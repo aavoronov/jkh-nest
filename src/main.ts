@@ -29,8 +29,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  // admin-bro @admin-bro/nestjs @admin-bro/express express-formidable @admin-bro/sequelize
-
   SwaggerModule.setup('swagger', app, document);
 
   await app.listen(5000);

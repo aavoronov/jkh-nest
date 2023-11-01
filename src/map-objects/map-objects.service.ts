@@ -72,16 +72,16 @@ export class MapObjectsService {
     lat1: string,
   ) {
     try {
-      const query = `
-      SELECT
-          "id", "point", "category", "userId", "isApproved"
-      FROM
-          "MapObjects"
-      WHERE
-         point @ ST_MakeEnvelope (
-          :lon0, :lat0, :lon1, :lat1)
-      LIMIT 801
-    `;
+      //   const query = `
+      //   SELECT
+      //       "id", "point", "category", "userId", "isApproved"
+      //   FROM
+      //       "MapObjects"
+      //   WHERE
+      //      point @ ST_MakeEnvelope (
+      //       :lon0, :lat0, :lon1, :lat1)
+      //   LIMIT 801
+      // `;
 
       const limitedQuery = `
     SELECT

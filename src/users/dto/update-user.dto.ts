@@ -10,6 +10,9 @@ export class UpdateUserDto {
   @ApiProperty()
   newPassword: string | undefined;
 
+  @ApiProperty()
+  role: string;
+
   // @ApiProperty()
   // file: string | Blob | undefined;
 

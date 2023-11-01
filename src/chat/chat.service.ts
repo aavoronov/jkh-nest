@@ -268,7 +268,6 @@ export class ChatService {
         where: {
           roomId: chat,
           message: {
-            // [Sequelize.fn('LOWER', Sequelize.col('someColumn')), 'lower'],
             [Op.iLike]: `%${query}%`,
           },
         },

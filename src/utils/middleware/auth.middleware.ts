@@ -22,6 +22,7 @@ export class AuthMiddleware implements NestMiddleware {
     @Next() next: NextFunction,
   ) {
     const { authorization } = req.headers;
+    console.log(authorization);
 
     //   const token = await req.headers.authorization;
     //   const result = await jwt.verify(token, process.env.JWT);
@@ -51,6 +52,7 @@ export class AuthMiddleware implements NestMiddleware {
 
       if (!user || !!user.verification) {
         // if (!user || !user.verification) {
+        console.log('here');
         req.body = { ...req.body, access: false };
 
         return next();
@@ -65,13 +67,14 @@ export class AuthMiddleware implements NestMiddleware {
       req.body = {
         ...req.body,
         access: true,
-        role: user.role,
+        role: result.role,
         id: user.id,
         // user: user.toJSON(),
       };
 
       return next();
     } catch (e) {
+      console.log(e);
       req.body = { ...req.body, access: false };
       return next();
     }
