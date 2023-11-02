@@ -72,55 +72,46 @@ export const entities = [
 export const componentLoader = new ComponentLoader();
 
 const Components = {
-  MyCustomAction: componentLoader.add(
-    'MyCustomAction',
-    './components/custom.tsx',
-  ),
-  Color: componentLoader.add('Color', './components/list/color.tsx'),
-  ColorShow: componentLoader.add(
-    'ColorShow',
-    './components/show/colorShow.tsx',
-  ),
-  ProfilePic: componentLoader.add(
-    'ProfilePic',
-    './components/list/ProfilePic.tsx',
-  ),
+  MyCustomAction: componentLoader.add('MyCustomAction', './components/custom'),
+  Color: componentLoader.add('Color', './components/list/color'),
+  ColorShow: componentLoader.add('ColorShow', './components/show/colorShow'),
+  ProfilePic: componentLoader.add('ProfilePic', './components/list/ProfilePic'),
   ProfilePicShow: componentLoader.add(
     'ProfilePicShow',
-    './components/show/ProfilePicShow.tsx',
+    './components/show/ProfilePicShow',
   ),
-  FileLink: componentLoader.add('FileLink', './components/list/fileLink.tsx'),
+  FileLink: componentLoader.add('FileLink', './components/list/fileLink'),
   FileLinkShow: componentLoader.add(
     'FileLinkShow',
-    './components/show/fileLinkShow.tsx',
+    './components/show/fileLinkShow',
   ),
   ObjectWithComplaint: componentLoader.add(
     'ObjectWithComplaint',
-    './components/list/objectWithComplaint.tsx',
+    './components/list/objectWithComplaint',
   ),
   ObjectWithComplaintShow: componentLoader.add(
     'ObjectWithComplaintShow',
-    './components/show/objectWithComplaintShow.tsx',
+    './components/show/objectWithComplaintShow',
   ),
   Coordinates: componentLoader.add(
     'Coordinates',
-    './components/list/coordinates.tsx',
+    './components/list/coordinates',
   ),
   CoordinatesShow: componentLoader.add(
     'CoordinatesShow',
-    './components/show/coordinates.tsx',
+    './components/show/coordinates',
   ),
   MapObjectDetails: componentLoader.add(
     'MapObjectDetails',
-    './components/list/mapObjectDetailsLink.tsx',
+    './components/list/mapObjectDetailsLink',
   ),
   MapObjectDetailsShow: componentLoader.add(
     'MapObjectDetailsShow',
-    './components/show/mapObjectDetailsLink.tsx',
+    './components/show/mapObjectDetailsLink',
   ),
   MultipleImagesShow: componentLoader.add(
     'MultipleImagesShow',
-    './components/show/multipleImagesShow.tsx',
+    './components/show/multipleImagesShow',
   ),
 };
 
