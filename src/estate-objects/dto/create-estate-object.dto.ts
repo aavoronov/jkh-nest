@@ -21,4 +21,7 @@ export class CreateEstateObjectDto {
 
   @ApiProperty({ required: true })
   readonly isOwner: boolean;
+
+  @ApiProperty({ required: true })
+  readonly role: 'user' | 'uk' | 'upravdom';
 }

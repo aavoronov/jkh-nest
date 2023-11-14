@@ -23,6 +23,19 @@ export class Message extends Model<Message> {
   })
   file: string;
 
+  @Column({
+    type: DataType.ENUM(
+      'user',
+      'uk',
+      'upravdom',
+      'stores',
+      'business',
+      'admakers',
+    ),
+    defaultValue: 'user',
+  })
+  role: string;
+
   @ForeignKey(() => User)
   userId: number;
 

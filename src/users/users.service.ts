@@ -24,7 +24,7 @@ import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
 import { RestorePasswordDto } from './dto/restore.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserDto } from './dto/user.dto';
+import { Role, UserDto } from './dto/user.dto';
 import { Profile } from './entities/profile.entity';
 import { User } from './entities/user.entity';
 import { WorkerProfile } from './entities/worker-profile.entity';
@@ -398,15 +398,15 @@ export class UsersService {
         otp: otp,
       });
 
-      const fetchData = async () => {
+      const sendSms = async () => {
         const res = await fetch(
-          `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/auth`,
-          // `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=ЖКХ+Консьерж+-+код+авторизации+${verification.otp}&sign=SMS Aero`,
+          // `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/auth`,
+          `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=ЖКХ+Консьерж+-+код+авторизации+${verification.otp}&sign=SMS Aero`,
         );
         return res;
       };
 
-      const status = (await fetchData()).status;
+      const status = (await sendSms()).status;
 
       // console.log('status', status);
 
@@ -416,7 +416,7 @@ export class UsersService {
         });
       }
 
-      return { otp: verification.otp };
+      return { status: StatusCodes.OK, text: 'ok' };
 
       // fetch(
       //   `https://${process.env.SMSAERO_EMAIL}:${process.env.SMSAERO_TOKEN}@gate.smsaero.ru/v2/sms/send?number=${phoneSanitized}&text=ЖКХ+Консьерж+-+код+авторизации+${verification.otp}&sign=SMS Aero`,
@@ -434,9 +434,9 @@ export class UsersService {
     }
   }
 
-  async authorizeByPhone(body: { phone: string; otp: string }) {
+  async authorizeByPhone(body: { phone: string; otp: string; role: Role }) {
     // // console.log(email, password);
-    const { phone, otp } = body;
+    const { phone, otp, role } = body;
     // console.log(phone);
 
     try {
@@ -464,6 +464,16 @@ export class UsersService {
           { model: WorkerProfile, attributes: ['isResolved'] },
         ],
       });
+
+      if (user && !user.role.includes(role)) {
+        throw new HttpException(
+          'У аккаунта нет такой роли',
+          StatusCodes.FORBIDDEN,
+          {
+            cause: new Error('Some Error'),
+          },
+        );
+      }
 
       if (user && user.isDeleted) {
         throw new HttpException('Аккаунт удален', StatusCodes.FORBIDDEN, {
@@ -523,9 +533,13 @@ export class UsersService {
         });
       }
 
-      const accessToken = jwt.sign(user.toJSON(), process.env.JWT, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
-      });
+      const accessToken = jwt.sign(
+        { ...user.toJSON(), role: role },
+        process.env.JWT,
+        {
+          expiresIn: process.env.JWT_EXPIRES_IN,
+        },
+      );
 
       const fieldsRequired = !user.email || !user.password;
       // console.log('fieldsRequired', fieldsRequired);
@@ -534,7 +548,12 @@ export class UsersService {
         status: StatusCodes.OK,
         message: ReasonPhrases.OK,
         token: accessToken,
-        user: { role: user.role, fieldsRequired: fieldsRequired },
+        user: {
+          email: user.email,
+          phone: user.phone,
+          role: role,
+          fieldsRequired: fieldsRequired,
+        },
       };
     } catch (e) {
       throw new HttpException(e.message, e.status, {

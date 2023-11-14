@@ -39,6 +39,13 @@ export class EstateObjectRights extends Model<EstateObjectRights> {
   })
   account: string;
 
+  // @ApiProperty()
+  // @Column({
+  //   type: DataType.ENUM('user', 'uk', 'upravdom'),
+  //   defaultValue: 'user',
+  // })
+  // role: 'user' | 'uk' | 'upravdom';
+
   // @BelongsTo(() => ChatRoom)
   // chat: ChatRoom;
 

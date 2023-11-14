@@ -22,7 +22,7 @@ import { CreateWorkerProfileDto } from './dto/create-worker-profile.dto';
 import { RestorePasswordDto } from './dto/restore.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserDto } from './dto/user.dto';
+import { Role, UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -76,7 +76,7 @@ export class UsersController {
   }
 
   @Post('phone/sign-in')
-  authorizeByPhone(@Body() body: { phone: string; otp: string }) {
+  authorizeByPhone(@Body() body: { phone: string; otp: string; role: Role }) {
     return this.usersService.authorizeByPhone(body);
   }
 

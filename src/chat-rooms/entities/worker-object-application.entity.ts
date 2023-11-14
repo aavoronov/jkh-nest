@@ -26,6 +26,12 @@ export class NewWorkerObjectApplication extends Model<NewWorkerObjectApplication
   })
   point: any;
 
+  @Column({
+    type: DataType.ENUM('uk', 'upravdom'),
+    allowNull: false,
+  })
+  role: 'uk' | 'upravdom';
+
   @BelongsTo(() => WorkerProfile)
   worker: WorkerProfile;
 

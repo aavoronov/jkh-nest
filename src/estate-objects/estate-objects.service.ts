@@ -71,8 +71,16 @@ export class EstateObjectsService {
 
   async createObject(createEstateObjectDto: CreateEstateObjectDto) {
     // console.log(createEstateObjectDto);
-    const { email, address, latitude, longitude, apartment, account, isOwner } =
-      createEstateObjectDto;
+    const {
+      email,
+      address,
+      latitude,
+      longitude,
+      apartment,
+      account,
+      isOwner,
+      role,
+    } = createEstateObjectDto;
 
     const user = await User.findOne({ where: { email: email } });
 
@@ -123,8 +131,9 @@ export class EstateObjectsService {
 
     let objectRight = await EstateObjectRights.findOne({
       where: {
-        // isOwnerRatherThanTenant: isOwner,
-        // account: account,
+        // // isOwnerRatherThanTenant: isOwner,
+        // // account: account,
+        // role: role,
         estateObjectId: object.id,
         userId: user.id,
       },
@@ -142,6 +151,7 @@ export class EstateObjectsService {
 
     objectRight = await EstateObjectRights.create({
       isOwnerRatherThanTenant: isOwner,
+      // role: role,
       account: account,
       estateObjectId: object.id,
       userId: user.id,
@@ -420,6 +430,7 @@ export class EstateObjectsService {
       const address = application.address;
       const latutide = application.point.coordinates[1];
       const longitude = application.point.coordinates[0];
+      const role = application.role;
       const apartment = '-1';
       const account = '0';
       const isOwner = false;
@@ -434,6 +445,7 @@ export class EstateObjectsService {
         apartment,
         account,
         isOwner,
+        role,
       });
 
       return { status: StatusCodes.OK, text: 'success' };
