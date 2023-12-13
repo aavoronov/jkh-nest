@@ -16,9 +16,9 @@ const ProfilePic: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
         {property.name}
       </Label>
       {value ? (
-        <a href={`http://localhost:5000/api/v1/uploads/profiles/${value}`}>
+        <a href={`${process.env.API_URL}uploads/profiles/${value}`}>
           <img
-            src={`http://localhost:5000/api/v1/uploads/profiles/${value}`}
+            src={`${process.env.API_URL}uploads/profiles/${value}`}
             style={{ width: 40 }}
           />
         </a>

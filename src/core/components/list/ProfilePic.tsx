@@ -13,7 +13,7 @@ const ProfilePic: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
     <div>
       {value ? (
         <img
-          src={`http://localhost:5000/api/v1/uploads/profiles/${value}`}
+          src={`${process.env.API_URL}uploads/profiles/${value}`}
           style={{ width: 40 }}
         />
       ) : (

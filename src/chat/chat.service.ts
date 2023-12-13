@@ -10,6 +10,9 @@ import { User } from '../users/entities/user.entity';
 import { WorkerProfile } from '../users/entities/worker-profile.entity';
 import { Message } from './entities/message.entity';
 import { IRequestMessage } from './interfaces/interface';
+import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { EstateObjectRights } from '../estate-objects/entities/estate-object-rights.entity';
+import { EstateObject } from '../estate-objects/entities/estate-object.entity';
 
 @Injectable()
 export class ChatService {
@@ -66,6 +69,8 @@ export class ChatService {
     const token = req.headers.authorization;
     const result = jwt.verify(token, process.env.JWT);
 
+    const user = await User.findOne({ where: { email: result.email } });
+
     async function getMessagesPerRoom(room: number) {
       const perRoom = await Message.findAll({
         include: [
@@ -91,7 +96,7 @@ export class ChatService {
           },
         ],
         where: { roomId: room },
-        attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],
+        attributes: ['id', 'message', 'role', 'file', 'roomId', 'createdAt'],
         order: [['id', 'DESC']],
         limit,
         // offset,
@@ -100,13 +105,37 @@ export class ChatService {
     }
 
     try {
-      const access = await RoomAccess.findAll({
+      const chats = await RoomAccess.findAll({
         include: [
-          { model: User, where: { email: result.email }, attributes: ['id'] },
+          {
+            model: User,
+            where: { email: result.email },
+            attributes: ['id'],
+          },
+          {
+            model: ChatRoom,
+            as: 'chat',
+            required: true,
+            include: [
+              {
+                model: EstateObject,
+                required: true,
+                attributes: [],
+                include: [
+                  {
+                    model: EstateObjectRights,
+                    attributes: [],
+                    where: { role: result.role, userId: user.id },
+                    required: true,
+                  },
+                ],
+              },
+            ],
+          },
         ],
       });
 
-      const rooms = access.map((item) => item.roomId);
+      const rooms = chats.map((item) => item.roomId);
 
       // console.log(rooms);
 
@@ -131,8 +160,8 @@ export class ChatService {
         data: msgs,
       };
     } catch (e) {
+      console.log(e);
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
-      // // console.log(e);
     }
   }
 
@@ -173,7 +202,7 @@ export class ChatService {
           },
         ],
         where: { roomId: room },
-        attributes: ['id', 'message', 'file', 'roomId', 'createdAt'],
+        attributes: ['id', 'message', 'role', 'file', 'roomId', 'createdAt'],
         order: [['id', 'DESC']],
         limit,
         offset,
@@ -366,14 +395,40 @@ export class ChatService {
     const token = req.headers.authorization;
     const result = jwt.verify(token, process.env.JWT);
 
+    const user = await User.findOne({ where: { email: result.email } });
+
     try {
-      const access = await RoomAccess.findAll({
+      const chats = await RoomAccess.findAll({
         include: [
-          { model: User, where: { email: result.email }, attributes: ['id'] },
+          {
+            model: User,
+            where: { email: result.email },
+            attributes: ['id'],
+          },
+          {
+            model: ChatRoom,
+            as: 'chat',
+            required: true,
+            include: [
+              {
+                model: EstateObject,
+                required: true,
+                attributes: [],
+                include: [
+                  {
+                    model: EstateObjectRights,
+                    attributes: [],
+                    where: { role: result.role, userId: user.id },
+                    required: true,
+                  },
+                ],
+              },
+            ],
+          },
         ],
       });
 
-      const rooms = access.map((item) => {
+      const rooms = chats.map((item) => {
         return { roomId: item.roomId, updatedAt: item.updatedAt };
       });
 
@@ -390,7 +445,7 @@ export class ChatService {
         // data: msgs,
       };
     } catch (e) {
-      // console.log(e);
+      console.log(e);
       return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
     }
   }

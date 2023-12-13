@@ -131,9 +131,9 @@ export class EstateObjectsService {
 
     let objectRight = await EstateObjectRights.findOne({
       where: {
-        // // isOwnerRatherThanTenant: isOwner,
-        // // account: account,
-        // role: role,
+        // isOwnerRatherThanTenant: isOwner,
+        // account: account,
+        role: role,
         estateObjectId: object.id,
         userId: user.id,
       },
@@ -151,7 +151,7 @@ export class EstateObjectsService {
 
     objectRight = await EstateObjectRights.create({
       isOwnerRatherThanTenant: isOwner,
-      // role: role,
+      role: role,
       account: account,
       estateObjectId: object.id,
       userId: user.id,
@@ -171,7 +171,7 @@ export class EstateObjectsService {
 
     const objects = await EstateObjectRights.findAll({
       include: [{ model: EstateObject }],
-      where: { userId: user.id },
+      where: { userId: user.id, role: result.role },
     });
 
     // // console.log(objects);
@@ -239,55 +239,12 @@ export class EstateObjectsService {
         'estateObject.chat.messages.id',
         'estateObject.chat.messages.user.id',
       ],
-      where: { userId: user.id },
+      where: { userId: user.id, role: result.role },
     });
 
     // // console.log(objects);
     return objects;
   }
-
-  // async getMessagesNumber(req: any): Promise<IRequestMessage> {
-  //   async function getMessagesPerRoom(room: any) {
-  //     const perRoom = await Message.count({
-  //       where: {
-  //         updatedAt: { [Op.gte]: room.updatedAt as Date },
-  //         roomId: room.roomId,
-  //       },
-  //     });
-  //     return { room: room.roomId, amount: perRoom };
-  //   }
-
-  //   const token = req.headers.authorization;
-  //   const result = jwt.verify(token, process.env.JWT);
-
-  //   try {
-  //     const access = await RoomAccess.findAll({
-  //       include: [
-  //         { model: User, where: { email: result.email }, attributes: ['id'] },
-  //       ],
-  //     });
-
-  //     const rooms = access.map((item) => {
-  //       return { roomId: item.roomId, updatedAt: item.updatedAt };
-  //     });
-
-  //     // console.log(rooms);
-
-  //     const results = await async.map(rooms, getMessagesPerRoom);
-
-  //     // console.log(results);
-
-  //     return {
-  //       status: StatusCodes.OK,
-  //       message: 'Ok',
-  //       data: results,
-  //       // data: msgs,
-  //     };
-  //   } catch (e) {
-  //     // console.log(e);
-  //     return { status: StatusCodes.BAD_REQUEST, message: 'Ошибка', data: e };
-  //   }
-  // }
 
   async deleteObject(req: any, id: number) {
     const token = req.headers.authorization;

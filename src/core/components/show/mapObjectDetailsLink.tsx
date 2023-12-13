@@ -11,7 +11,7 @@ const mapObjectDetailsLink = (props: ShowPropertyProps) => {
         {property.name}
       </Label>
       <a
-        href={`http://localhost:5000/admin/resources/MapObjectDetails/records/${record.params.objectId}/show`}
+        href={`${process.env.ADMIN_URL}/resources/MapObjectDetails/records/${record.params.objectId}/show`}
       >
         link
       </a>

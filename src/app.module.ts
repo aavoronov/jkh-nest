@@ -59,6 +59,10 @@ const modules = [
           rootPath: '/admin',
           resources: resources,
           componentLoader,
+          env: {
+            API_URL: process.env.API_URL,
+            ADMIN_URL: process.env.ADMIN_URL,
+          },
         },
         auth: {
           authenticate,
@@ -71,6 +75,7 @@ const modules = [
           secret: 'secretwhatever',
         },
       }),
+      imports: [ConfigModule],
     }),
     ScheduleModule.forRoot(),
   ],

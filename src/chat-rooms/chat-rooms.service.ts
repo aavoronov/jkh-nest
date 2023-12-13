@@ -40,7 +40,7 @@ export class ChatRoomsService {
             include: [
               {
                 model: EstateObjectRights,
-                where: { userId: user.id },
+                where: { userId: user.id, role: result.role },
                 required: true,
                 attributes: ['id'],
               },
@@ -140,6 +140,7 @@ export class ChatRoomsService {
     try {
       const token = req.headers.authorization;
       const result = jwt.verify(token, process.env.JWT);
+      console.log('result', result);
       const user = await User.findOne({
         where: { email: result.email },
         attributes: ['id'],
@@ -147,7 +148,28 @@ export class ChatRoomsService {
 
       const chats = await RoomAccess.findAll({
         where: { userId: user.id },
-        include: [{ model: ChatRoom, as: 'chat' }],
+        include: [
+          {
+            model: ChatRoom,
+            as: 'chat',
+            required: true,
+            include: [
+              {
+                model: EstateObject,
+                required: true,
+                attributes: [],
+                include: [
+                  {
+                    model: EstateObjectRights,
+                    attributes: [],
+                    where: { role: result.role, userId: user.id },
+                    required: true,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
         attributes: ['id'],
       });
       return chats;
@@ -420,12 +442,13 @@ export class ChatRoomsService {
       const record = await NewWorkerObjectApplication.create({
         workerId: user.workerProfile.id,
         address: address,
+        role: result.role,
         point: { type: 'Point', coordinates: [longitude, latitude] },
       });
 
       await mailer.newWorkerObjectApplication(record.id);
     } catch (e) {
-      // console.log(e);
+      console.log(e);
     }
   }
 }

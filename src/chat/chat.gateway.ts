@@ -97,6 +97,7 @@ export class ChatGateway
     const newMessage = await Message.create({
       userId: user.id,
       message: message.text,
+      role: message.role,
       file: message.filename === '' ? null : dbFileName,
       roomId: parseInt(message.roomId),
     });

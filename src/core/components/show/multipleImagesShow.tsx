@@ -30,10 +30,10 @@ const MultipleImagesShow: React.FC<ShowPropertyProps> = (
             style={{ marginRight: 10 }}
             key={index}
             target="_blank"
-            href={`http://localhost:5000/api/v1/uploads/map-objects/${item}`}
+            href={`${process.env.API_URL}uploads/map-objects/${item}`}
           >
             <img
-              src={`http://localhost:5000/api/v1/uploads/map-objects/${item}`}
+              src={`${process.env.API_URL}uploads/map-objects/${item}`}
               style={{ width: 80 }}
             />
           </a>

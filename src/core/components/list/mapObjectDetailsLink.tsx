@@ -24,7 +24,7 @@ const mapObjectDetailsLink = (props: ShowPropertyProps) => {
 
   return (
     <a
-      href={`http://localhost:5000/admin/resources/MapObjectDetails/records/${id}/show`}
+      href={`${process.env.ADMIN_URL}/resources/MapObjectDetails/records/${id}/show`}
     >
       link
     </a>

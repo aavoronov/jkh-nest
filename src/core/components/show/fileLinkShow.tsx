@@ -15,7 +15,7 @@ const ProfilePic: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
       <Label style={{ color: '#898A9A', marginBottom: 4 }}>
         {property.name}
       </Label>
-      <a href={`http://localhost:5000/api/v1/uploads/workers/${value}`}>link</a>
+      <a href={`${process.env.API_URL}uploads/workers/${value}`}>link</a>
     </Box>
   );
   //

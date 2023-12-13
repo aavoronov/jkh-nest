@@ -28,7 +28,7 @@ const ObjectWithComplaint = (props: ShowPropertyProps) => {
 
   return (
     <a
-      href={`http://localhost:5000/admin/resources/${typeMap[objectType]}/records/${record.params.objectId}/show`}
+      href={`${process.env.ADMIN_URL}/resources/${typeMap[objectType]}/records/${record.params.objectId}/show`}
     >
       link
     </a>

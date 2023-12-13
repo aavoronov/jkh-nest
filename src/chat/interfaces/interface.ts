@@ -1,3 +1,5 @@
+import { Role } from '@/src/users/dto/user.dto';
+
 export type TTypeChat = 'group' | 'personal';
 
 export interface IMessageBody {
@@ -6,6 +8,7 @@ export interface IMessageBody {
   text: string;
   color: string;
   profilePic: string | undefined;
+  role: Role;
   // file: Buffer | Blob | string | undefined;
   file: string | undefined;
   filename: string | undefined;

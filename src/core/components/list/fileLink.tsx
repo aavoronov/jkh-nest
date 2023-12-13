@@ -1,5 +1,5 @@
 import { Box } from '@adminjs/design-system';
-import { ShowPropertyProps } from 'adminjs';
+import AdminJS, { ShowPropertyProps } from 'adminjs';
 import React from 'react';
 
 const ProfilePic: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
@@ -12,7 +12,7 @@ const ProfilePic: React.FC<ShowPropertyProps> = (props: ShowPropertyProps) => {
 
   return (
     <Box mb="xl">
-      <a href={`http://localhost:5000/api/v1/uploads/workers/${value}`}>link</a>
+      <a href={`${process.env.API_URL}uploads/workers/${value}`}>link</a>
     </Box>
   );
   //
